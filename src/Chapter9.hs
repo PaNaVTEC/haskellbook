@@ -34,7 +34,16 @@ multOfThree :: [Integer]
 multOfThree = [x | x <- [1..30] , x `mod` 3 == 0]
 
 filterArticles :: String -> [String]
-filterArticles sentence = filter articleWords splitWords
-  where splitWords = myWords sentence
+filterArticles sentence = filter articleWords sentenceInWords
+  where sentenceInWords = myWords sentence
         articles = ["the", "a"]
         articleWords = (\x -> not $ elem x articles)
+
+ownZip :: [a] -> [b] -> [(a, b)]
+ownZip a1 b1 = go a1 b1 []
+  where
+    go :: [a] -> [b] -> [(a,b)] -> [(a,b)]
+    go [] bs acc = acc
+    go as [] acc = acc
+    go as bs acc = go (tail as) (tail bs) $ makeTuple as bs : acc
+    makeTuple as bs = (,) (head as) (head bs)
