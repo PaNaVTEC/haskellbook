@@ -43,7 +43,10 @@ ownZip :: [a] -> [b] -> [(a, b)]
 ownZip a1 b1 = go a1 b1 []
   where
     go :: [a] -> [b] -> [(a,b)] -> [(a,b)]
-    go [] bs acc = acc
-    go as [] acc = acc
+    go [] _ acc  = acc
+    go _ [] acc  = acc
     go as bs acc = go (tail as) (tail bs) $ makeTuple as bs : acc
     makeTuple as bs = (,) (head as) (head bs)
+
+ownZipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+ownZipWith f a b = map (\x -> f (fst x) (snd x)) $ ownZip a b
