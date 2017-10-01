@@ -1,5 +1,7 @@
 module Chapter9 where
 
+import           Data.Char
+
 myWordsChar :: Char -> String -> [String]
 myWordsChar c a = go a []
   where go [] acc = acc
@@ -50,3 +52,9 @@ ownZip a1 b1 = go a1 b1 []
 
 ownZipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
 ownZipWith f a b = map (\x -> f (fst x) (snd x)) $ ownZip a b
+
+onlyUpper :: String -> String
+onlyUpper i = filter isUpper i
+
+capitalize :: String -> String
+capitalize i = [toUpper $ head i] ++ tail i
