@@ -58,3 +58,9 @@ onlyUpper i = filter isUpper i
 
 capitalize :: String -> String
 capitalize i = [toUpper $ head i] ++ tail i
+
+onlyFirstCapitalized :: String -> Char
+onlyFirstCapitalized i = toUpper $ head i
+
+onlyFirstCapitalizedPoint :: String -> Char
+onlyFirstCapitalizedPoint = toUpper . head
