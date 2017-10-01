@@ -30,10 +30,11 @@ eftEnum from t = go from []
           | f < t = go (succ f) (acc ++ [f])
           | otherwise = acc
 
-multOfThree :: (Enum a) [a]
+multOfThree :: [Integer]
 multOfThree = [x | x <- [1..30] , x `mod` 3 == 0]
 
-myFilter ::  (String a) => a -> [a]
-myFilter sentence = sentence
--- Function composition
--- [x | x <- [1..30] , x `mod` 3 == 0]
+filterArticles :: String -> [String]
+filterArticles sentence = filter articleWords splitWords
+  where splitWords = myWords sentence
+        articles = ["the", "a"]
+        articleWords = (\x -> not $ elem x articles)
