@@ -1,7 +1,7 @@
 module Main where
 
-import Chapter8
-import WordNumber
+import           Chapter8
+import           WordNumber
 
 main :: IO ()
 main = print $ WordNumber.wordNumber 1000
@@ -40,3 +40,12 @@ x = (+)
 fff xs = w `x` 1
   where w = length xs
 
+
+isPalindrome :: (Eq a) => [a] -> Bool
+isPalindrome x = x == reverse x
+
+myAbs :: Integer -> Integer
+myAbs x = if x > 0 then x else -x
+
+-- makeTuple :: (a,b) -> (c,d) -> ((b,d), (a,c))
+-- makeTuple a b = (,) a b
