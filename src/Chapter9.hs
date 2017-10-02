@@ -64,3 +64,31 @@ onlyFirstCapitalized i = toUpper $ head i
 
 onlyFirstCapitalizedPoint :: String -> Char
 onlyFirstCapitalizedPoint = toUpper . head
+
+myAnd :: [Bool] -> Bool
+myAnd []     = True
+myAnd (x:xs) = if x == False then False else myAnd xs
+
+myOr ::  [Bool] -> Bool
+myOr []     = False
+myOr (x:xs) = if x == True then True else myOr xs
+
+myAny :: (a -> Bool) -> [a] -> Bool
+myAny _ []     = False
+myAny f (x:xs) = if f x then True else myAny f xs
+
+myElem :: Eq a => a -> [a] -> Bool
+myElem x xs = myAny (\y -> x == y) xs
+
+myReverse :: [a] -> [a]
+myReverse xs = go xs []
+  where go :: [a] -> [a] -> [a]
+        go [] acc      = acc
+        go (x: xs) acc = go xs (x : acc)
+
+squishMap :: (a -> [b]) -> [a] -> [b]
+squishMap f []     = []
+squishMap f (x:xs) = (f x) ++ squishMap f xs
+
+myMaximumBy :: (a-> a -> Ordering) -> [a] -> a
+myMaximumBy 

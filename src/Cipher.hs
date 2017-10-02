@@ -9,7 +9,7 @@ shift = 3
 
 isUppercase :: Char -> Bool
 isUppercase c = (ord c) `elem` [97..122]
---
+
 isLowercase :: Char -> Bool
 isLowercase c = (ord c) `elem` [65..90]
 
