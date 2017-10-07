@@ -35,3 +35,6 @@ myElemFold n xs = foldr (||) False (fmap (== n) xs)
 
 myReverse :: [a] -> [a]
 myReverse = foldr (\a b -> b ++ [a]) []
+
+myMap :: (a -> b) -> [a] -> [b]
+myMap f as = foldr (\a b -> [f a] ++ b) [] as
