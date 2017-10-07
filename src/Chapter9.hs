@@ -89,6 +89,3 @@ myReverse xs = go xs []
 squishMap :: (a -> [b]) -> [a] -> [b]
 squishMap f []     = []
 squishMap f (x:xs) = (f x) ++ squishMap f xs
-
-myMaximumBy :: (a-> a -> Ordering) -> [a] -> a
-myMaximumBy 
