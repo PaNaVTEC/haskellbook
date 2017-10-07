@@ -51,4 +51,5 @@ squishMap f as = squish $ map (\a -> f a) as
 squishAgain :: [[a]] -> [a]
 squishAgain as = squishMap (\a -> a) as
 
-
+myMaximumBy :: (a -> a -> Ordering) -> [a] -> a
+myMaximumBy f xs = foldr (\a b -> if f a b == GT then a else b) (head xs) xs
