@@ -26,3 +26,12 @@ myOrFold = foldl (||) False
 
 myAndFold :: (a -> Bool) -> [a] -> Bool
 myAndFold f = foldr (\a b -> f a || b) False
+
+myElemAny :: Eq a => a -> [a] -> Bool
+myElemAny a arr = any (\b -> a==b) arr
+
+myElemFold :: Eq a => a -> [a] -> Bool
+myElemFold n xs = foldr (||) False (fmap (== n) xs)
+
+myReverse :: [a] -> [a]
+myReverse = foldr (\a b -> b ++ [a]) []
