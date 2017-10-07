@@ -44,3 +44,11 @@ myFilter f as = foldr (\a b -> if f a then  b else a : b) [] as
 
 squish :: [[a]] -> [a]
 squish as = foldl (\a b -> a ++ b) [] as
+
+squishMap :: (a -> [b]) -> [a] -> [b]
+squishMap f as = squish $ map (\a -> f a) as
+
+squishAgain :: [[a]] -> [a]
+squishAgain as = squishMap (\a -> a) as
+
+
