@@ -51,3 +51,5 @@ instance (Num a, TooMany a) => TooMany (a, a) where
 
 data BigSmall = Big Bool | Small Bool deriving (Eq, Show)
 -- cardinality 2 + 2 = 4
+
+data NumberOrBool = Numba Int8 | BoolyBool Bool deriving (Eq, Show)
