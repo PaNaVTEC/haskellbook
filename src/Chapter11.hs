@@ -3,6 +3,7 @@
 module Chapter11 where
 
 import           Data.Int
+import           Data.List
 
 data Manufacturer = Mini | Mazda | Tata deriving (Eq, Show)
 data Airline = PapuAir | CatapultsR'us |TakeYourChancesUnited deriving (Eq, Show)
@@ -53,3 +54,17 @@ data BigSmall = Big Bool | Small Bool deriving (Eq, Show)
 -- cardinality 2 + 2 = 4
 
 data NumberOrBool = Numba Int8 | BoolyBool Bool deriving (Eq, Show)
+
+data OperatingSystem = GnuPlusLinux | OpenBSDPlusNevermindJustBSDStrill | Mac | Windows deriving (Eq, Show)
+data ProgLang = Haskell | Agda | Idris | PureScript deriving (Eq, Show)
+data Programmer = Programmer { os :: OperatingSystem, lang :: ProgLang } deriving (Eq, Show)
+
+allOperatingSystems :: [OperatingSystem]
+allOperatingSystems = [ GnuPlusLinux, OpenBSDPlusNevermindJustBSDStrill, Mac, Windows ]
+
+allLanguages :: [ProgLang]
+allLanguages = [ Haskell, Agda, Idris, PureScript ]
+
+allProgrammers :: [Programmer]
+allProgrammers = concat $
+  map (\os -> map (\lang -> Programmer os lang) allLanguages) allOperatingSystems
