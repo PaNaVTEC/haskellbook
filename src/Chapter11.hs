@@ -68,3 +68,34 @@ allLanguages = [ Haskell, Agda, Idris, PureScript ]
 allProgrammers :: [Programmer]
 allProgrammers = concat $
   map (\os -> map (\lang -> Programmer os lang) allLanguages) allOperatingSystems
+
+data BinaryTree a =
+  Leaf | Node (BinaryTree a ) a (BinaryTree a ) deriving (Eq, Ord, Show)
+
+insert' :: Ord a => a -> BinaryTree a -> BinaryTree a
+insert' b Leaf = Node Leaf b Leaf
+insert' b (Node left a right)
+  | b == a = Node left a right
+  | b < a = Node (insert' b left) a right
+  | b > a = Node left a (insert' b right)
+
+map' :: (a -> b) -> BinaryTree a -> BinaryTree b
+map' _ Leaf                = Leaf
+map' f (Node left a right) = Node (map' f left) (f a) (map' f right)
+
+preorder :: BinaryTree a -> [a]
+preorder Leaf                = []
+preorder (Node left a right) = a : preorder left ++ preorder right
+
+inorder :: BinaryTree a -> [a]
+inorder Leaf                = []
+inorder (Node left a right) = inorder left ++ [a] ++ inorder right
+
+postOrder :: BinaryTree a -> [a]
+postOrder Leaf                = []
+postOrder (Node left a right) = postOrder left ++ postOrder right ++ [a]
+
+-- any traversal order is fine
+foldTree :: (a -> b -> b) -> b -> BinaryTree a -> b
+foldTree _ b Leaf                = b
+foldTree f b (Node left a right) = foldTree f (f a b) right
