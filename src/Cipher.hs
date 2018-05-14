@@ -22,4 +22,4 @@ convertLetter x | isLowercase x = addShift x ['A'..'Z']
 convertletter otherwise = otherwise
 
 caesarCipher :: String -> String
-caesarCipher = map (\x -> convertLetter x)
+caesarCipher = map convertLetter
