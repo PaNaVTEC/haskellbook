@@ -23,6 +23,7 @@ calculateMask keyword toEncode = snd $ foldl maskFor (0, "") toEncode
   where maskFor (index, enc) a | isNotSymbol a = (index + 1, enc ++ [(cycle keyword !! index)])
         maskFor (index, enc) a = (index, enc ++ [a])
 
+-- 'meet at dawn' becomes 'mppr ae oywy' with they keyword 'ally'
 cipher :: String -> String
 cipher toEncode = zipWith (\a b -> convertLetter (shiftOf a) b) mask toEncode
   where mask = calculateMask keyword toEncode
