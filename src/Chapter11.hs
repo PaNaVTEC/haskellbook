@@ -6,6 +6,7 @@ import           Data.Char
 import           Data.Int
 import           Data.List
 import           Data.String
+import           Data.Tuple
 
 data Manufacturer = Mini | Mazda | Tata deriving (Eq, Show)
 data Airline = PapuAir | CatapultsR'us |TakeYourChancesUnited deriving (Eq, Show)
@@ -121,8 +122,8 @@ type Presses = Int
 type Layout = [(Digit, [Char])]
 data DaPhone = DaPhone Layout
 
-daPhone :: DaPhone
-daPhone = DaPhone [
+layout :: Layout
+layout = [
   ('1', []),
   ('2', ['a', 'b', 'c', '2']),
   ('3', ['d', 'e', 'f', '3']),
@@ -135,10 +136,17 @@ daPhone = DaPhone [
   ('*', ['^', '*']),
   ('0', ['+', '_', '0']),
   ('#', ['.', ',', '#'])
-  ]
+ ]
 
+daPhone :: DaPhone
+daPhone = DaPhone layout
+
+-- 'a' gives you back [(2, 1)]
 reverseTaps :: DaPhone -> Char -> [(Digit, Presses)]
 reverseTaps (DaPhone layout) c = undefined
+
+hasChar :: Char -> [Char] -> Bool
+hasChar c arr = maybe False (\_ -> True) (findIndex (\t -> t == c) arr)
 
 cellPhonesDead :: DaPhone -> String -> [(Digit, Presses)]
 cellPhonesDead = undefined
