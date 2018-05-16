@@ -157,3 +157,6 @@ contains arr a = maybe False (\a -> True) (findIndex (\e -> e == a) arr)
 
 cellPhonesDead :: DaPhone -> String -> [(Digit, Presses)]
 cellPhonesDead daPhone text = concat $ fmap (\a -> reverseTaps daPhone a) text
+
+fingerTaps :: [(Digit, Presses)] -> Presses
+fingerTaps = foldl (\b -> \a -> snd a + b) 0
