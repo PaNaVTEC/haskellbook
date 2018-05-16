@@ -140,14 +140,17 @@ daPhone = DaPhone [
   ]
 
 reverseTaps :: DaPhone -> Char -> [(Digit, Presses)]
-reverseTaps (DaPhone layout) c = maybe [] id $ determineDigits (findKeyByChar c)
+reverseTaps (DaPhone layout) c = maybe [] id $ determineDigits (findKeyByChar (toLower c))
   where
     findKeyByChar :: Char -> Maybe Key
     findKeyByChar c = find (\k -> contains (snd k) c) layout
     determineDigits :: Maybe Key -> Maybe [(Digit, Presses)]
-    determineDigits key = fmap (\a -> [(fst a, pressesOf (snd a))]) key
+    determineDigits key = fmap (\a -> (addUpper c) ++ [(fst a, pressesOf (snd a))]) key
     pressesOf :: [Char] -> Int
-    pressesOf digits = maybe 0 (\a -> a + 1) (findIndex (\e -> e == c) digits)
+    pressesOf digits = maybe 0 (\a -> a + 1) (findIndex (\e -> e == toLower c) digits)
+    addUpper :: Char -> [(Digit, Presses)]
+    addUpper c | isUpper c = [('*', 1)]
+    addUpper _ = []
 
 contains :: Eq a => [a] -> a -> Bool
 contains arr a = maybe False (\a -> True) (findIndex (\e -> e == a) arr)
