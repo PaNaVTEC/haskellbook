@@ -101,7 +101,7 @@ foldTree _ b Leaf                = b
 foldTree f b (Node left a right) = foldTree f (f a b) right
 
 isSubseqOf :: (Eq a) => [a] -> [a] -> Bool
-isSubseqOf [] _                    = True
-isSubseqOf _ []                    = False
-isSubseqOf src@(sh:st) trg@(th:tt) | sh == th = isSubseqOf st tt
-isSubseqOf src@(sh:st) trg@(th:tt) = isSubseqOf src tt
+isSubseqOf [] _            = True
+isSubseqOf _ []            = False
+isSubseqOf (sh:st) (th:tt) | sh == th = isSubseqOf st tt
+isSubseqOf src trg@(_:tt)  = isSubseqOf src tt
