@@ -99,3 +99,9 @@ postOrder (Node left a right) = postOrder left ++ postOrder right ++ [a]
 foldTree :: (a -> b -> b) -> b -> BinaryTree a -> b
 foldTree _ b Leaf                = b
 foldTree f b (Node left a right) = foldTree f (f a b) right
+
+isSubseqOf :: (Eq a) => [a] -> [a] -> Bool
+isSubseqOf [] _                    = True
+isSubseqOf _ []                    = False
+isSubseqOf src@(sh:st) trg@(th:tt) | sh == th = isSubseqOf st tt
+isSubseqOf src@(sh:st) trg@(th:tt) = isSubseqOf src tt
