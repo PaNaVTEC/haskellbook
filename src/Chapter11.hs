@@ -2,8 +2,10 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Chapter11 where
 
+import           Data.Char
 import           Data.Int
 import           Data.List
+import           Data.String
 
 data Manufacturer = Mini | Mazda | Tata deriving (Eq, Show)
 data Airline = PapuAir | CatapultsR'us |TakeYourChancesUnited deriving (Eq, Show)
@@ -48,7 +50,6 @@ instance TooMany (Int, Int) where
 
 instance (Num a, TooMany a) => TooMany (a, a) where
   tooMany (c1, c2) = tooMany (c1 + c2)
-
 
 data BigSmall = Big Bool | Small Bool deriving (Eq, Show)
 -- cardinality 2 + 2 = 4
@@ -97,11 +98,17 @@ postOrder (Node left a right) = postOrder left ++ postOrder right ++ [a]
 
 -- any traversal order is fine
 foldTree :: (a -> b -> b) -> b -> BinaryTree a -> b
-foldTree _ b Leaf                = b
-foldTree f b (Node left a right) = foldTree f (f a b) right
+foldTree _ b Leaf             = b
+foldTree f b (Node _ a right) = foldTree f (f a b) right
 
 isSubseqOf :: (Eq a) => [a] -> [a] -> Bool
 isSubseqOf [] _            = True
 isSubseqOf _ []            = False
 isSubseqOf (sh:st) (th:tt) | sh == th = isSubseqOf st tt
-isSubseqOf src trg@(_:tt)  = isSubseqOf src tt
+isSubseqOf src (_:tt)      = isSubseqOf src tt
+
+capitalizeWords :: String -> [(String, String)]
+capitalizeWords sentence = map capitalizeTuple (words sentence)
+  where
+    capitalizeTuple word@(x : xs) = (word, (toUpper x) : xs)
+    capitalizeTuple []            = ([], [])
