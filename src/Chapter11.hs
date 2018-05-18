@@ -160,3 +160,10 @@ cellPhonesDead daPhone text = concat $ fmap (\a -> reverseTaps daPhone a) text
 
 fingerTaps :: [(Digit, Presses)] -> Presses
 fingerTaps = foldl (\b -> \a -> snd a + b) 0
+
+mostPopularLetter :: String -> Char
+mostPopularLetter text = fst $ maximumBy (\a b -> compare (snd a) (snd b)) (cellPhonesDead daPhone text)
+
+data Expr = Lit Integer | Add Expr Expr
+eval :: Expr -> Integer
+eval = undefined
