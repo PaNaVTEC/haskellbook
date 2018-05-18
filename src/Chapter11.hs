@@ -162,3 +162,13 @@ contains arr a = maybe False (\a -> True) (findIndex (\e -> e == a) arr)
 
 cellPhonesDead :: DaPhone -> String -> [(Digit, Presses)]
 cellPhonesDead daPhone text = concat $ map (\a -> reverseTaps daPhone a) text
+
+data Expr = Lit Integer | Add Expr Expr
+
+eval :: Expr -> Integer
+eval (Lit i)     = i
+eval (Add e1 e2) = eval e1 + eval e2
+
+printExpr :: Expr -> String
+printExpr (Lit i)     = show i
+printExpr (Add e1 e2) = printExpr e1 ++ " + " ++ printExpr e2
