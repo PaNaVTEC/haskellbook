@@ -5,6 +5,7 @@ module Chapter11 where
 import           Data.Char
 import           Data.Int
 import           Data.List
+import           Data.Maybe
 import           Data.String
 import           Data.Tuple
 
@@ -119,7 +120,8 @@ convo = ["Wanna play 20 questions"]
 
 type Digit = Char
 type Presses = Int
-type Layout = [(Digit, [Char])]
+type Key = (Digit, [Char])
+type Layout = [Key]
 data DaPhone = DaPhone Layout
 
 layout :: Layout
@@ -143,7 +145,20 @@ daPhone = DaPhone layout
 
 -- 'a' gives you back [(2, 1)]
 reverseTaps :: DaPhone -> Char -> [(Digit, Presses)]
-reverseTaps (DaPhone layout) c = undefined
+reverseTaps (DaPhone layout) c = maybe [] id $ determineDigits (findKeyByChar (toLower c))
+  where
+    findKeyByChar :: Char -> Maybe Key
+    findKeyByChar c = find (\k -> contains (snd k) c) layout
+    determineDigits :: Maybe Key -> Maybe [(Digit, Presses)]
+    determineDigits key = fmap (\a -> (addUpper c) ++ [(fst a, pressesOf (snd a))]) key
+    pressesOf :: [Char] -> Int
+    pressesOf digits = maybe 0 (\a -> a + 1) (findIndex (\e -> e == toLower c) digits)
+    addUpper :: Char -> [(Digit, Presses)]
+    addUpper c | isUpper c = [('*', 1)]
+    addUpper _ = []
+
+contains :: Eq a => [a] -> a -> Bool
+contains arr a = maybe False (\a -> True) (findIndex (\e -> e == a) arr)
 
 hasChar :: Char -> [Char] -> Bool
 hasChar c arr = maybe False (\_ -> True) (findIndex (\t -> t == c) arr)
