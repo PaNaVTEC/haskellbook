@@ -23,5 +23,16 @@ countTheBeforeVowel text = (go 0) $ words text
     go acc ("the" : word : rest) = (toInt . startsWithVowel $ word) + (go acc rest) + acc
     go acc (_ : rest)            = acc + go acc rest
     startsWithVowel []     = False
-    startsWithVowel (l: _) = l == 'a' || l == 'e' || l == 'i' || l == 'o' || l == 'u'
-    toInt i = if i == True then 1 else 0
+    startsWithVowel (l: _) = isVowel l
+
+isVowel :: Char -> Bool
+isVowel l = l == 'a' || l == 'e' || l == 'i' || l == 'o' || l == 'u'
+
+toInt :: Bool -> Integer
+toInt i = if i == True then 1 else 0
+
+countVowels :: String -> Integer
+countVowels sentence = foldl (\b a -> b + vowelsInWord a) 0 $ words sentence
+  where
+    vowelsInWord :: String -> Integer
+    vowelsInWord word = foldl (\b a -> b + (toInt . isVowel $ a)) 0 word
