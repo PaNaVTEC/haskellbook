@@ -7,6 +7,7 @@ import           Data.Int
 import           Data.List
 import           Data.Maybe
 import           Data.String
+import           Data.Tuple
 
 data Manufacturer = Mini | Mazda | Tata deriving (Eq, Show)
 data Airline = PapuAir | CatapultsR'us |TakeYourChancesUnited deriving (Eq, Show)
@@ -123,8 +124,8 @@ type Key = (Digit, [Char])
 type Layout = [Key]
 data DaPhone = DaPhone Layout
 
-daPhone :: DaPhone
-daPhone = DaPhone [
+layout :: Layout
+layout = [
   ('1', []),
   ('2', ['a', 'b', 'c', '2']),
   ('3', ['d', 'e', 'f', '3']),
@@ -137,8 +138,12 @@ daPhone = DaPhone [
   ('*', ['^', '*']),
   ('0', ['+', '_', '0']),
   ('#', ['.', ',', '#'])
-  ]
+ ]
 
+daPhone :: DaPhone
+daPhone = DaPhone layout
+
+-- 'a' gives you back [(2, 1)]
 reverseTaps :: DaPhone -> Char -> [(Digit, Presses)]
 reverseTaps (DaPhone layout) c = maybe [] id $ determineDigits (findKeyByChar (toLower c))
   where
@@ -165,5 +170,11 @@ mostPopularLetter :: String -> Char
 mostPopularLetter text = fst $ maximumBy (\a b -> compare (snd a) (snd b)) (cellPhonesDead daPhone text)
 
 data Expr = Lit Integer | Add Expr Expr
+
 eval :: Expr -> Integer
-eval = undefined
+eval (Lit i)     = i
+eval (Add e1 e2) = eval e1 + eval e2
+
+printExpr :: Expr -> String
+printExpr (Lit i)     = show i
+printExpr (Add e1 e2) = printExpr e1 ++ " + " ++ printExpr e2
