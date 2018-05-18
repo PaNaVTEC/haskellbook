@@ -160,8 +160,5 @@ reverseTaps (DaPhone layout) c = maybe [] id $ determineDigits (findKeyByChar (t
 contains :: Eq a => [a] -> a -> Bool
 contains arr a = maybe False (\a -> True) (findIndex (\e -> e == a) arr)
 
-hasChar :: Char -> [Char] -> Bool
-hasChar c arr = maybe False (\_ -> True) (findIndex (\t -> t == c) arr)
-
 cellPhonesDead :: DaPhone -> String -> [(Digit, Presses)]
-cellPhonesDead = undefined
+cellPhonesDead daPhone text = concat $ map (\a -> reverseTaps daPhone a) text
