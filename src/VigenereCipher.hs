@@ -34,3 +34,10 @@ shiftOf _ = 0
 rangeFor :: Char -> [Char]
 rangeFor a | isLower a = ['a'..'z']
 rangeFor a | isUpper a = ['A'..'Z']
+
+main :: IO ()
+main = do
+  putStr "Text to encode: "
+  line <- getLine
+  _ <- putStrLn $ cipher line
+  return ()

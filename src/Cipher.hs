@@ -11,9 +11,16 @@ addShift ::  Char -> [Char] -> Char
 addShift x range = cycle range !! (fromJust(elemIndex x range) + shift)
 
 convertLetter :: Char -> Char
-convertLetter x | isUpper x = addShift x ['a'..'z']
-convertLetter x | isLower x = addShift x ['A'..'Z']
+convertLetter x | isLower x = addShift x ['a'..'z']
+convertLetter x | isUpper x = addShift x ['A'..'Z']
 convertletter otherwise = otherwise
 
 caesarCipher :: String -> String
 caesarCipher = map convertLetter
+
+main :: IO ()
+main = do
+  putStr "Text to encode: "
+  line <- getLine
+  _ <- putStrLn $ caesarCipher line
+  return ()
