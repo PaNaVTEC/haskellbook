@@ -73,3 +73,33 @@ natToInteger' nat = sum $ unfoldr toOne nat
 integerToNat :: Int -> Maybe Nat
 integerToNat i | i >= 0 = Just $ foldl (\b _ -> Succ b) Zero (replicate i 1)
 integerToNat _ = Nothing
+
+isJust :: Maybe a -> Bool
+isJust Nothing = False
+isJust _       = True
+
+isNothing :: Maybe a -> Bool
+isNothing = not . isJust
+
+mayybe :: b -> (a -> b) -> Maybe a -> b
+mayybe b _ Nothing  = b
+mayybe _ f (Just a) = f a
+
+fromMaybe :: a -> Maybe a -> a
+fromMaybe a m = mayybe a id m
+
+listToMaybe :: [a] -> Maybe a
+listToMaybe []      = Nothing
+listToMaybe (a : _) = Just a
+
+maybeToList :: Maybe a -> [a]
+maybeToList a = maybe [] (\b -> [b]) a
+
+catMaybes :: [Maybe a] -> [a]
+catMaybes arr = fmap extract . filter isJust $ arr
+  where extract (Just a) = a
+
+flipMaybe :: [Maybe a] -> Maybe [a]
+flipMaybe arr = case catMaybes arr of
+  a | length a == length arr -> Just a
+  _ -> Nothing
