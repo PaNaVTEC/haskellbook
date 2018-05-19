@@ -129,3 +129,26 @@ either' _ f (Right b) = f b
 
 eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
 eitherMaybe'' f e =  either' (\_ -> Nothing) (Just . f) e
+
+myIterate :: (a -> a) -> a -> [a]
+myIterate f a = a : (myIterate f (f a))
+
+myUnfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+myUnfoldr f b = case f b of
+  Nothing      -> []
+  Just (a, b') -> a : myUnfoldr f b'
+
+betterIterate :: (a -> a) -> a -> [a]
+betterIterate f a = myUnfoldr (\b -> Just (b, b)) a
+
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Eq, Ord, Show)
+unfold :: (a -> Maybe (a, b, a)) -> a -> BinaryTree b
+unfold f a = case f a of
+  Nothing         -> Leaf
+  Just (a, b, a') -> Node (unfold f a) b (unfold f a')
+
+treeBuild :: Integer -> BinaryTree Integer
+treeBuild i = unfold something i
+  where
+    something 0 = Nothing
+    something a = Just (a - 1, a - 1, a - 1)
