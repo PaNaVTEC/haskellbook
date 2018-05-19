@@ -1,5 +1,7 @@
 module Chapter12 where
 
+import           Data.List
+
 -- notThe "the" -> Nothing
 -- notThe "woot" -> Just 'woot'
 -- notThe "blahtheblah" -> Just 'blahtheblah'
@@ -55,3 +57,19 @@ mkWord :: String -> Maybe Word'
 mkWord t = case (countVowels t > countConsonants t) of
   True  -> Nothing
   False -> Just $ Word' t
+
+data Nat = Zero | Succ Nat deriving (Eq, Show)
+
+natToInteger :: Num a => Nat -> a
+natToInteger Zero     = 0
+natToInteger (Succ n) = 1 + natToInteger n
+
+natToInteger' :: Num a => Nat -> a
+natToInteger' nat = sum $ unfoldr toOne nat
+  where
+    toOne Zero     = Nothing
+    toOne (Succ n) = Just (1, n)
+
+integerToNat :: Int -> Maybe Nat
+integerToNat i | i >= 0 = Just $ foldl (\b _ -> Succ b) Zero (replicate i 1)
+integerToNat _ = Nothing
