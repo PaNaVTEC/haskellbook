@@ -25,14 +25,33 @@ countTheBeforeVowel text = (go 0) $ words text
     startsWithVowel []     = False
     startsWithVowel (l: _) = isVowel l
 
+vowels :: String
+vowels = "aeiou"
+
 isVowel :: Char -> Bool
-isVowel l = l == 'a' || l == 'e' || l == 'i' || l == 'o' || l == 'u'
+isVowel l = elem l vowels
 
 toInt :: Bool -> Integer
 toInt i = if i == True then 1 else 0
 
-countVowels :: String -> Integer
-countVowels sentence = foldl (\b a -> b + vowelsInWord a) 0 $ words sentence
+countPredicate :: String -> (Char -> Bool) -> Int
+countPredicate sentence f = sum . fmap inWord $ words sentence
   where
-    vowelsInWord :: String -> Integer
-    vowelsInWord word = foldl (\b a -> b + (toInt . isVowel $ a)) 0 word
+    inWord :: String -> Int
+    inWord word = length . filter f $ word
+
+countVowels :: String -> Int
+countVowels sentence = countPredicate sentence isVowel
+
+countConsonants :: String -> Int
+countConsonants sentence = countPredicate sentence isConsonant
+
+newtype Word' = Word' String deriving (Eq, Show)
+
+isConsonant :: Char -> Bool
+isConsonant l = notElem l vowels && elem l ['a'..'z'] || elem l ['a'..'Z']
+
+mkWord :: String -> Maybe Word'
+mkWord t = case (countVowels t > countConsonants t) of
+  True  -> Nothing
+  False -> Just $ Word' t
