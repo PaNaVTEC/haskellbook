@@ -3,9 +3,9 @@ module Chapter8 where
 mainy :: IO ()
 mainy = print $ dividedBy 2 0
 
-recursiveSum :: (Eq a, Num a) => a -> a
+recursiveSum :: (Ord a, Eq a, Num a) => a -> a
 recursiveSum 0 = 0
-recursiveSum n = n + (recursiveSum n - 1)
+recursiveSum n = n + recursiveSum (n - 1)
 
 timesWithRecSum :: (Integral a) => a -> a -> a
 timesWithRecSum 0 _ = 0
@@ -23,4 +23,3 @@ dividedBy num denom = go num denom 0
 mc91 :: (Ord a, Num a) => a -> a
 mc91 n | n > 100  = n - 10
        | n <= 100 = 91
-
