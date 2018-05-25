@@ -1,6 +1,5 @@
-import           Test.Hspec
-
 import           Data.List           (sort)
+import           Test.Hspec
 import           Test.QuickCheck
 import           Test.QuickCheck.Gen
 
