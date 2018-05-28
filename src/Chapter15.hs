@@ -39,12 +39,12 @@ main = do
 instance Arbitrary a => Arbitrary (First' a) where
   arbitrary = firstGen
 
-firstGen :: (Arbitrary a) => Gen (First' a)
+firstGen :: Arbitrary a => Gen (First' a)
 firstGen = do
   a <- optionalGen
   return (First' a)
 
-optionalGen :: (Arbitrary a) => Gen (Optional a)
+optionalGen :: Arbitrary a => Gen (Optional a)
 optionalGen = frequency [(2, nadaGen) , (5, onlyGen)]
 
 nadaGen :: (Arbitrary a) => Gen (Optional a)
@@ -138,6 +138,32 @@ instance (Arbitrary a
     return $ Four x y z a
 
 type FourAssoc a b c d = (Four a b c d) -> (Four a b c d) -> (Four a b c d) -> Bool
+
+-- BoolConj
+newtype BoolConj = BoolConj Bool deriving (Eq, Show)
+instance S.Semigroup BoolConj where
+  (BoolConj a) <> (BoolConj b) = BoolConj $ a && b
+
+newtype BoolDisj = BoolDisj Bool deriving (Eq, Show)
+instance S.Semigroup BoolDisj where
+  (BoolDisj a) <> (BoolDisj b) = BoolDisj $ a || b
+
+data Or a b = Fst a | Snd b deriving (Eq, Show)
+instance S.Semigroup (Or a b) where
+  a@(Snd _) <> _ = a
+  _ <> b = b
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where
+  arbitrary = do
+    x <- arbitrary
+    y <- arbitrary
+    g <- frequency [(5, return $ Fst x), (5, return $ Snd y)]
+    return g
+
+type OrAssoc a b = (Or a b) -> (Or a b) -> (Or a b) -> Bool
+
+newtype Combine a b = Combine { unCombine :: (a -> b) }
+
 -- Law check
 semigroupAssoc :: (S.Semigroup m, Eq m) => m -> m -> m -> Bool
 semigroupAssoc a b c = (a S.<> (b S.<> c)) == ((a S.<> b) S.<> c)
@@ -149,4 +175,5 @@ mainSemigroup = do
   _ <- quickCheck (semigroupAssoc :: (TwoAssoc (S.First Int) (S.First Int)))
   _ <- quickCheck (semigroupAssoc :: (ThreeAssoc (S.First Int) (S.First Int) (S.First Int)))
   _ <- quickCheck (semigroupAssoc :: (FourAssoc (S.First Int) (S.First Int) (S.First Int) (S.First Int)))
+  _ <- quickCheck (semigroupAssoc :: (OrAssoc Int Int))
   return ()
