@@ -163,6 +163,9 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where
 type OrAssoc a b = (Or a b) -> (Or a b) -> (Or a b) -> Bool
 
 newtype Combine a b = Combine { unCombine :: (a -> b) }
+instance S.Semigroup b => S.Semigroup (Combine a b) where
+  a <> b = Combine $ (unCombine a) S.<> (unCombine b)
+type CombineAssoc a b = (Combine a b) -> (Combine a b) -> (Combine a b) -> Bool
 
 -- Law check
 semigroupAssoc :: (S.Semigroup m, Eq m) => m -> m -> m -> Bool
