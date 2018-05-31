@@ -81,7 +81,7 @@ type TrivAssoc = Trivial -> Trivial -> Trivial -> Bool
 newtype Identity a = Identity a deriving (Eq, Show)
 instance S.Semigroup (Identity a) where
   a <> _ = a
-instance Arbitrary a => Arbitrary (Identity a) where
+instance (Arbitrary a, Monoid a) => Arbitrary (Identity a) where
   arbitrary = do
     i <- arbitrary
     return $ Identity i
@@ -91,7 +91,7 @@ type IdentityAssoc a = Identity a -> Identity a -> Identity a -> Bool
 data Two a b = Two a b deriving (Eq, Show)
 instance (S.Semigroup a, S.Semigroup b) => S.Semigroup (Two a b) where
   (Two a b) <> (Two c d) = Two (a S.<> c) (b S.<> d)
-instance (Arbitrary a, Arbitrary b) => Arbitrary (Two a b) where
+instance (Arbitrary a, Arbitrary b, Monoid a, Monoid b, S.Semigroup a, S.Semigroup b) => Arbitrary (Two a b) where
   arbitrary = do
     x <- arbitrary
     y <- arbitrary
@@ -178,8 +178,8 @@ semigroupAssoc a b c = (a S.<> (b S.<> c)) == ((a S.<> b) S.<> c)
 mainSemigroup :: IO ()
 mainSemigroup = do
   _ <- quickCheck (semigroupAssoc :: TrivAssoc)
-  _ <- quickCheck (semigroupAssoc :: (IdentityAssoc Int))
-  _ <- quickCheck (semigroupAssoc :: (TwoAssoc (S.First Int) (S.First Int)))
+  _ <- quickCheck (semigroupAssoc :: (IdentityAssoc (Sum Int)))
+  _ <- quickCheck (semigroupAssoc :: (TwoAssoc (First Int) (First Int)))
   _ <- quickCheck (semigroupAssoc :: (ThreeAssoc (S.First Int) (S.First Int) (S.First Int)))
   _ <- quickCheck (semigroupAssoc :: (FourAssoc (S.First Int) (S.First Int) (S.First Int) (S.First Int)))
   _ <- quickCheck (semigroupAssoc :: (OrAssoc Int Int))
@@ -201,3 +201,61 @@ validationCheck = do
   print $ failure "woot" S.<> failure "blah"
   print $ success 1 S.<> success 2
   print $ failure "woot" S.<> success 2
+
+-- Monoid instances
+instance Monoid Trivial where
+  mempty = Trivial
+  mappend = (S.<>)
+
+instance (Monoid a) => Monoid (Identity a) where
+  mempty = Identity mempty
+  mappend = (S.<>)
+
+instance (S.Semigroup a, S.Semigroup b, Monoid a, Monoid b) => Monoid (Two a b) where
+  mempty = Two mempty mempty
+  mappend = (S.<>)
+
+instance Monoid BoolConj where
+  mempty = BoolConj True
+  mappend = (S.<>)
+
+instance Monoid BoolDisj where
+  mempty = BoolDisj False
+  mappend = (S.<>)
+
+instance (S.Semigroup b, Monoid b) => Monoid (Combine a b) where
+  mempty = Combine mempty
+  mappend = (S.<>)
+
+instance Monoid (Comp a) where
+  mempty = Comp id
+  mappend = (S.<>)
+
+newtype Mem s a = Mem { runMem :: s -> (a, s) }
+instance Monoid a => Monoid (Mem s a) where
+  mempty = Mem $ \s -> (mempty, s)
+  mappend a b = Mem $ \iniState -> let
+    (obj, nextState) = runMem a $ iniState
+    (obj', nextState') = runMem b $ nextState
+    in
+    (obj <> obj', nextState')
+
+f' :: Mem Integer [Char]
+f' = Mem $ \s -> ("hi", s + 1)
+
+mainMem = do
+  let rmzero = runMem mempty 0
+      rmleft = runMem (f' <> mempty) 0
+      rmright = runMem (mempty <> f') 0
+  print $ rmleft
+  print $ rmright
+  print $ (rmzero :: (String, Int))
+  print $ rmleft == runMem f' 0
+  print $ rmright == runMem f' 0
+
+mainMonoid :: IO ()
+mainMonoid = do
+  _ <- quickCheck (monoidAssoc :: TrivAssoc)
+  _ <- quickCheck (monoidAssoc :: (IdentityAssoc (Sum Int)))
+  _ <- quickCheck (monoidAssoc :: (TwoAssoc (First Int) (First Int)))
+  return ()
