@@ -139,7 +139,6 @@ instance (Arbitrary a
 
 type FourAssoc a b c d = (Four a b c d) -> (Four a b c d) -> (Four a b c d) -> Bool
 
--- BoolConj
 newtype BoolConj = BoolConj Bool deriving (Eq, Show)
 instance S.Semigroup BoolConj where
   (BoolConj a) <> (BoolConj b) = BoolConj $ a && b
@@ -167,6 +166,11 @@ instance S.Semigroup b => S.Semigroup (Combine a b) where
   a <> b = Combine $ (unCombine a) S.<> (unCombine b)
 type CombineAssoc a b = (Combine a b) -> (Combine a b) -> (Combine a b) -> Bool
 
+newtype Comp a = Comp { unComp :: a -> a }
+instance S.Semigroup (Comp a) where
+  (Comp f) <> (Comp g) = Comp $ f . g
+type CompAssoc a = Comp a -> Comp a -> Comp a -> Bool
+
 -- Law check
 semigroupAssoc :: (S.Semigroup m, Eq m) => m -> m -> m -> Bool
 semigroupAssoc a b c = (a S.<> (b S.<> c)) == ((a S.<> b) S.<> c)
@@ -180,3 +184,20 @@ mainSemigroup = do
   _ <- quickCheck (semigroupAssoc :: (FourAssoc (S.First Int) (S.First Int) (S.First Int) (S.First Int)))
   _ <- quickCheck (semigroupAssoc :: (OrAssoc Int Int))
   return ()
+
+data Validation a b = Failure' a | Success' b deriving (Eq, Show)
+instance S.Semigroup a => S.Semigroup (Validation a b) where
+  a@(Success' _) <> _ = a
+  _ <> a@(Success' _) = a
+  (Failure' a) <> (Failure' b) = Failure' (a S.<> b)
+
+validationCheck :: IO ()
+validationCheck = do
+  let failure :: String -> Validation String Int
+      failure = Failure'
+  let success :: Int -> Validation String Int
+      success = Success'
+  print $ success 1 S.<> failure "blah"
+  print $ failure "woot" S.<> failure "blah"
+  print $ success 1 S.<> success 2
+  print $ failure "woot" S.<> success 2
