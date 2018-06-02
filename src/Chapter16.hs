@@ -41,3 +41,20 @@ d = (fmap . fmap . fmap) replaceWithP lms
 
 -- Taking . and replacing with fmap . fmap
 -- (b -> c) -> (a -> b) -> a -> c
+
+fa :: [Int]
+fa = fmap (+1) $ read "[1]" :: [Int]
+
+fb :: Maybe [[Char]]
+fb = (fmap . fmap) (++ "lol") (Just ["Hi,", "Hello"])
+
+fc :: Integer -> Integer
+fc = (*2) . (\x -> x - 2)
+
+fd :: Int -> [Char]
+fd x = fmap ((return '1' ++) . show) (\x -> [x, 1..3]) $ x
+
+fe :: IO Integer
+fe = let ioi = readIO "1" :: IO Integer
+         changed = fmap (read . ("123" ++) . show) ioi
+     in fmap (*3) changed
