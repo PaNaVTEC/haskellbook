@@ -109,10 +109,33 @@ instance (Arbitrary a) => Arbitrary (Pair a) where
     a' <- arbitrary
     return (Pair a a')
 
+data Three a b c = Three a b c deriving (Eq, Show)
+instance Functor (Three a b) where
+  fmap f (Three a b c) = Three a b (f c)
+type ThreeFC = Three Int Int Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a, Arbitrary b, Arbitrary c) => Arbitrary (Three a b c) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    c <- arbitrary
+    return $ Three a b c
+
+data Three' a b = Three' a b b deriving (Eq, Show)
+instance Functor (Three' a) where
+  fmap f (Three' a b c) = Three' a (f b) (f c)
+type Three'FC = Three' Int Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Three' a b) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    b' <- arbitrary
+    return $ Three' a b b'
+
 main :: IO ()
 main = do
   _ <- quickCheck (functorCompose' :: IntFC)
   _ <- quickCheck (functorCompose' :: IdentityFC)
   _ <- quickCheck (functorCompose' :: PairFC)
   _ <- quickCheck (functorCompose' :: TwoFC)
+  _ <- quickCheck (functorCompose' :: ThreeFC)
   return ()
