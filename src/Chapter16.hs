@@ -65,6 +65,13 @@ fe = let ioi = readIO "1" :: IO Integer
 data Two a b = Two a b deriving (Eq, Show)
 instance Functor (Two a) where
   fmap f (Two a b) = Two a (f b)
+type TwoFC = Two Int Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Two a b) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    return $ Two a b
+
 data Or a b = First a | Second b deriving (Eq, Show)
 instance Functor (Or a) where
   fmap f (First a)  = First a
@@ -92,8 +99,20 @@ instance (Arbitrary a) => Arbitrary (Identity a) where
     a <- arbitrary
     return $ Identity a
 
+data Pair a = Pair a a deriving (Eq, Show)
+instance Functor Pair where
+  fmap f (Pair a b) = Pair (f a) (f b)
+type PairFC = Pair Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a) => Arbitrary (Pair a) where
+  arbitrary = do
+    a <- arbitrary
+    a' <- arbitrary
+    return (Pair a a')
+
 main :: IO ()
 main = do
   _ <- quickCheck (functorCompose' :: IntFC)
   _ <- quickCheck (functorCompose' :: IdentityFC)
+  _ <- quickCheck (functorCompose' :: PairFC)
+  _ <- quickCheck (functorCompose' :: TwoFC)
   return ()
