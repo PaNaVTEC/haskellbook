@@ -1,5 +1,8 @@
 module Chapter16 where
 
+import           Test.QuickCheck
+import           Test.QuickCheck.Function
+
 ave :: Maybe String
 ave = Just "ave"
 
@@ -58,3 +61,39 @@ fe :: IO Integer
 fe = let ioi = readIO "1" :: IO Integer
          changed = fmap (read . ("123" ++) . show) ioi
      in fmap (*3) changed
+
+data Two a b = Two a b deriving (Eq, Show)
+instance Functor (Two a) where
+  fmap f (Two a b) = Two a (f b)
+data Or a b = First a | Second b deriving (Eq, Show)
+instance Functor (Or a) where
+  fmap f (First a)  = First a
+  fmap f (Second b) = Second (f b)
+
+functorIdentity :: (Functor f, Eq (f a)) => f a -> Bool
+functorIdentity f = fmap id f == f
+
+functorCompose :: (Functor f, Eq (f c)) => (a -> b) -> (b -> c) -> f a -> Bool
+functorCompose f g x = (fmap g (fmap f x)) == (fmap ( g. f) x)
+
+functorCompose' :: (Eq (f c), Functor f) => f a -> Fun a b -> Fun b c -> Bool
+functorCompose' x (Fun _ f) (Fun _ g) = (fmap (g . f) x) == (fmap g . fmap f $ x)
+
+type IntToInt = Fun Int Int
+type IntFC = [Int] -> IntToInt -> IntToInt -> Bool
+
+--- Functor instances
+newtype Identity a = Identity a deriving (Eq, Show)
+instance Functor Identity where
+  fmap f (Identity a) = Identity (f a)
+type IdentityFC = Identity Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a) => Arbitrary (Identity a) where
+  arbitrary = do
+    a <- arbitrary
+    return $ Identity a
+
+main :: IO ()
+main = do
+  _ <- quickCheck (functorCompose' :: IntFC)
+  _ <- quickCheck (functorCompose' :: IdentityFC)
+  return ()
