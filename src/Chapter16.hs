@@ -158,6 +158,41 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Four' a b) where
 
 -- Can't Implement Functor for Trivial because the kind of Functor is * -> * and trivial is *
 
+data Possibly a = LolNope | Yeppers a deriving (Eq, Show)
+instance Functor Possibly where
+  fmap _ LolNope     = LolNope
+  fmap f (Yeppers a) = Yeppers $ f a
+type PossibilyFC = Possibly Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a) => Arbitrary (Possibly a) where
+  arbitrary = frequency [(3, yeppersGen), (1, lolNopeGen)]
+
+yeppersGen :: Arbitrary a => Gen (Possibly a)
+yeppersGen = do
+  a <- arbitrary
+  return $ Yeppers a
+
+lolNopeGen :: Arbitrary a => Gen (Possibly a)
+lolNopeGen = return LolNope
+
+data Sum a b = First' a | Second' b deriving (Eq, Show)
+instance Functor (Sum a) where
+  fmap f (Second' a) = Second' (f a)
+  fmap _ (First' a)  = First' a
+
+type SumFC = Sum Int Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Sum a b) where
+  arbitrary = frequency [(3, firstGen), (1, secondGen)]
+
+firstGen :: Arbitrary a => Gen (Sum a b)
+firstGen = do
+  a <- arbitrary
+  return $ First' a
+
+secondGen :: Arbitrary b => Gen (Sum a b)
+secondGen = do
+  a <- arbitrary
+  return $ Second' a
+
 main :: IO ()
 main = do
   _ <- quickCheck (functorCompose' :: IntFC)
@@ -167,4 +202,6 @@ main = do
   _ <- quickCheck (functorCompose' :: ThreeFC)
   _ <- quickCheck (functorCompose' :: FourFC)
   _ <- quickCheck (functorCompose' :: Four'FC)
+  _ <- quickCheck (functorCompose' :: PossibilyFC)
+  _ <- quickCheck (functorCompose' :: SumFC)
   return ()
