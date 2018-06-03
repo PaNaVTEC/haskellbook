@@ -131,6 +131,33 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Three' a b) where
     b' <- arbitrary
     return $ Three' a b b'
 
+data Four a b c d = Four a b c d deriving (Eq, Show)
+instance Functor (Four a b c) where
+  fmap f (Four a b c d) = Four a b c (f d)
+type FourFC = Four Int Int Int Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => Arbitrary (Four a b c d) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    c <- arbitrary
+    d <- arbitrary
+    return $ Four a b c d
+
+data Four' a b = Four' a a a b deriving (Eq, Show)
+instance Functor (Four' a) where
+  fmap f (Four' a a' a'' b) = Four' a a' a'' (f b)
+
+type Four'FC = Four' Int Int -> IntToInt -> IntToInt -> Bool
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Four' a b) where
+  arbitrary = do
+    a <- arbitrary
+    a' <- arbitrary
+    b <- arbitrary
+    b' <- arbitrary
+    return $ Four' a a' b b'
+
+-- Can't Implement Functor for Trivial because the kind of Functor is * -> * and trivial is *
+
 main :: IO ()
 main = do
   _ <- quickCheck (functorCompose' :: IntFC)
@@ -138,4 +165,6 @@ main = do
   _ <- quickCheck (functorCompose' :: PairFC)
   _ <- quickCheck (functorCompose' :: TwoFC)
   _ <- quickCheck (functorCompose' :: ThreeFC)
+  _ <- quickCheck (functorCompose' :: FourFC)
+  _ <- quickCheck (functorCompose' :: Four'FC)
   return ()
