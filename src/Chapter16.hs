@@ -193,6 +193,22 @@ secondGen = do
   a <- arbitrary
   return $ Second' a
 
+data BoolAndSomethingElse a = False' a | True' a deriving (Eq, Show)
+instance Functor BoolAndSomethingElse where
+  fmap f (False' a) = False' $ f a
+  fmap f (True' a)  = True' $ f a
+
+instance Arbitrary a => Arbitrary (BoolAndSomethingElse a) where
+  arbitrary = frequency [(3, falseGen), (1, trueGen)]
+
+falseGen :: Arbitrary a => Gen (BoolAndSomethingElse a)
+falseGen = arbitrary >>= \a -> pure (False' a)
+
+trueGen :: Arbitrary a => Gen (BoolAndSomethingElse a)
+trueGen = arbitrary >>= \a -> pure (True' a)
+
+type BoolAndSomethingElseFC = BoolAndSomethingElse Int -> IntToInt -> IntToInt -> Bool
+
 main :: IO ()
 main = do
   _ <- quickCheck (functorCompose' :: IntFC)
@@ -204,4 +220,5 @@ main = do
   _ <- quickCheck (functorCompose' :: Four'FC)
   _ <- quickCheck (functorCompose' :: PossibilyFC)
   _ <- quickCheck (functorCompose' :: SumFC)
+  _ <- quickCheck (functorCompose' :: BoolAndSomethingElseFC)
   return ()
