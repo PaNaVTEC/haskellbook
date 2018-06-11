@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Chapter16 where
 
 import           Test.QuickCheck
@@ -208,6 +210,57 @@ trueGen :: Arbitrary a => Gen (BoolAndSomethingElse a)
 trueGen = arbitrary >>= \a -> pure (True' a)
 
 type BoolAndSomethingElseFC = BoolAndSomethingElse Int -> IntToInt -> IntToInt -> Bool
+
+data Company a b c = DeepBlue a c | Something b
+instance Functor (Company e e') where
+  fmap _ (Something b)  = Something (b)
+  fmap f (DeepBlue a c) = DeepBlue a (f c)
+
+data More a b = L a b a | R b a b deriving (Eq, Show)
+instance Functor (More x) where
+  fmap f (L a b a') = L a (f b) a'
+  fmap f (R b a b') = R (f b) a (f b')
+
+data Quant a b = Finance | Desk a | Bloor b deriving (Eq, Show)
+instance Functor (Quant a) where
+  fmap _ Finance   = Finance
+  fmap _ (Desk a)  = Desk a
+  fmap f (Bloor b) = Bloor (f b)
+
+data K a b = K a
+instance Functor (K a) where
+  fmap _ (K a) = K a
+
+newtype Flip f a b = Flip (f b a) deriving (Eq, Show)
+instance Functor (Flip K a) where
+  fmap f (Flip (K b)) = Flip $ K (f b)
+
+data EvilGoateeConst a b = GoatyConst b
+instance Functor (EvilGoateeConst a) where
+  fmap f (GoatyConst b) = GoatyConst (f b)
+
+data LiftItOut f a = LiftItOut (f a)
+instance Functor f => Functor (LiftItOut f) where
+  fmap f (LiftItOut a) = LiftItOut (fmap f a)
+
+data Parappa f g a = Parappa (f a) (g a)
+instance (Functor f, Functor g) => Functor (Parappa f g) where
+  fmap f (Parappa f' g) = Parappa (fmap f f') (fmap f g)
+
+data IgnoreOne f g a b = IgnoreSomething (f a) (g b)
+instance Functor g => Functor (IgnoreOne f g a) where
+  fmap f (IgnoreSomething f' g) = IgnoreSomething f' (fmap f g)
+
+data List a = Nil | Cons a (List a)
+instance Functor List where
+  fmap _ Nil        = Nil
+  fmap f (Cons a t) = Cons (f a) (fmap f t)
+
+data TalkToMe a = Halt | Print String a | Read (String -> a)
+instance Functor TalkToMe where
+  fmap _ Halt        = Halt
+  fmap f (Print s a) = Print s (f a)
+  fmap f (Read f')   = Read (\s -> f (f' s))
 
 main :: IO ()
 main = do
