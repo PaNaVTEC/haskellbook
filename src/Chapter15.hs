@@ -243,6 +243,7 @@ instance Monoid a => Monoid (Mem s a) where
 f' :: Mem Integer [Char]
 f' = Mem $ \s -> ("hi", s + 1)
 
+mainMem :: IO ()
 mainMem = do
   let rmzero = runMem mempty 0
       rmleft = runMem (f' <> mempty) 0
@@ -252,6 +253,10 @@ mainMem = do
   print $ (rmzero :: (String, Int))
   print $ rmleft == runMem f' 0
   print $ rmright == runMem f' 0
+
+type MemLeftId s a = Mem s a -> Mem s a -> Bool
+type MemRightId s a = Mem s a -> Mem s a -> Bool
+type MemAssoc s a = Mem s a -> Mem s a -> Mem s a -> Bool
 
 mainMonoid :: IO ()
 mainMonoid = do
