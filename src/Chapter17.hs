@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 module Chapter17 where
 
 import           Data.List (elemIndex)
@@ -41,3 +42,18 @@ y'' = lookup 2 $ zip xs ys
 
 summed :: Maybe Integer
 summed = sum <$> ((,) <$> x' <*> y'')
+
+newtype Constant a b =
+  Constant { getConstant :: a }
+  deriving (Eq, Ord, Show)
+
+instance Functor (Constant a) where
+  fmap f a = Constant (getConstant a)
+
+instance Monoid a => Applicative (Constant a) where
+
+  pure :: a1 -> Constant a a1
+  pure _ = Constant mempty
+
+  (<*>) :: Constant a (a1 -> b) -> Constant a a1 -> Constant a b
+  (<*>) (Constant f) (Constant a) = Constant $ mappend f a
