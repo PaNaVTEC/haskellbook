@@ -51,9 +51,17 @@ instance Functor (Constant a) where
   fmap f a = Constant (getConstant a)
 
 instance Monoid a => Applicative (Constant a) where
-
-  pure :: a1 -> Constant a a1
+  pure :: a1 -> Constant a a0
   pure _ = Constant mempty
 
   (<*>) :: Constant a (a1 -> b) -> Constant a a1 -> Constant a b
   (<*>) (Constant f) (Constant a) = Constant $ mappend f a
+
+ex1 :: Maybe [Char]
+ex1 = const <$> Just "Hello" <*> pure "World"
+
+ex2 :: Maybe (Integer, Integer, [Char], [Integer])
+ex2 = (,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> pure [1,2,3]
+
+-- idLaw = pure id <*> v = v
+-- compositionLaw (.) <*> u <*> v <*> w = u <*> (v <*> w)
