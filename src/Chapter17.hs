@@ -1,7 +1,12 @@
 {-# LANGUAGE InstanceSigs #-}
 module Chapter17 where
 
-import           Data.List (elemIndex)
+import           Control.Applicative
+import           Data.List                (elemIndex)
+import           Data.Monoid
+import           Test.QuickCheck
+import           Test.QuickCheck.Checkers
+import           Test.QuickCheck.Classes
 
 added :: Maybe Integer
 added = (+3) <$> (lookup 3 $ zip [1,2,3] [4,5,6])
@@ -65,3 +70,75 @@ ex2 = (,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> pure [1,2,3]
 
 -- idLaw = pure id <*> v = v
 -- compositionLaw (.) <*> u <*> v <*> w = u <*> (v <*> w)
+
+data List a = Nil | Cons a (List a) deriving (Eq, Show)
+instance Functor List where
+  fmap _ Nil              = Nil
+  fmap f (Cons head tail) = Cons (f head) (fmap f tail)
+
+instance Applicative List where
+  pure :: a -> List a
+  pure a = Cons a Nil
+
+  (<*>) :: List (a -> b) -> List a -> List b
+  (<*>) l l' = concat' $ fmap (\a -> fmap (\f -> f a) l) l'
+
+append :: List a -> List a -> List a
+append Nil ys         = ys
+append (Cons x xs) ys = Cons x $ xs `append` ys
+
+fold :: (a -> b -> b) -> b -> List a -> b
+fold _ b Nil        = b
+fold f b (Cons h t) = f h (fold f b t)
+
+concat' :: List (List a) -> List a
+concat' = fold append Nil
+
+flatMap :: (a -> List b) -> List a -> List b
+flatMap f as = concat' $ fmap (\a -> f a) as
+
+take' :: Int -> List a -> List a
+take' n l = go n l
+  where
+    go _ Nil        = Nil
+    go 0 _          = Nil
+    go n (Cons h t) = Cons h (go (n - 1) (t))
+
+newtype ZipList' a = ZipList' (List a) deriving (Eq, Show)
+
+instance Eq a => EqProp (ZipList' a) where
+  xs' =-= ys' = xs'' `eq` ys''
+    where xs'' = let (ZipList' l) = xs'
+                in take' 3000 l
+          ys'' = let (ZipList' l) = ys'
+                in take' 3000 l
+
+instance Monoid a => Monoid (ZipList' a) where
+  mempty = pure mempty
+  mappend = liftA2 mappend
+
+instance Functor ZipList' where
+  fmap f (ZipList' xss) = ZipList' $ fmap f xss
+
+instance Applicative ZipList' where
+  pure :: a -> ZipList' a
+  pure a = ZipList' (Cons a Nil)
+
+  (<*>) :: ZipList' (a -> b) -> ZipList' a -> ZipList' b
+  (<*>) (ZipList' lf) (ZipList' la) = ZipList' $ flatMap (\a -> (\f -> f a) <$> lf) la
+
+data Validation' e a = Failure' e | Success' a deriving (Eq, Show)
+
+instance Functor (Validation' e) where
+  fmap f (Success' a) = Success' $ f a
+  fmap f (Failure' a) = Failure' a
+
+instance Monoid e => Applicative (Validation' e) where
+  pure :: a -> Validation' e a
+  pure a = Success' a
+
+  (<*>) :: Validation' e (a -> b) -> Validation' e a -> Validation' e b
+  (<*>) (Failure' fa) (Failure' a) = Failure' $ mappend fa a
+  (<*>) (Failure' fa) (Success' a) = Failure' $ fa
+  (<*>) (Success' fa) (Failure' a) = Failure' $ a
+  (<*>) (Success' fa) (Success' a) = Success' $ fa a

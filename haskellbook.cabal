@@ -22,6 +22,7 @@ library
                      , hspec
                      , containers
                      , QuickCheck
+                     , checkers
   default-language:    Haskell2010
 
 executable haskellbook-exe
@@ -33,6 +34,7 @@ executable haskellbook-exe
                      , containers
                      , random
                      , split
+                     , checkers
   default-language:    Haskell2010
 
 test-suite haskellbook-test
