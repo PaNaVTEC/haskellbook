@@ -156,5 +156,11 @@ successGen = do
   a <- arbitrary
   return $ Success' a
 
+validationTrigger :: Validation' (String, Sum Int, Sum Int) (String, Sum Int, Sum Int)
+validationTrigger = undefined
+
+instance (Eq a, Eq e) => EqProp (Validation' e a) where
+  (=-=) = eq
+
 testLaws :: IO ()
-testLaws = quickBatch $ applicative
+testLaws = quickBatch $ applicative validationTrigger
