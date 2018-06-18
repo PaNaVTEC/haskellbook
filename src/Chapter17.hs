@@ -142,3 +142,19 @@ instance Monoid e => Applicative (Validation' e) where
   (<*>) (Failure' fa) (Success' a) = Failure' $ fa
   (<*>) (Success' fa) (Failure' a) = Failure' $ a
   (<*>) (Success' fa) (Success' a) = Success' $ fa a
+
+instance (Arbitrary e, Arbitrary a) => Arbitrary (Validation' e a) where
+  arbitrary = frequency [(3, failureGen), (3, successGen)]
+
+failureGen :: Arbitrary e => Gen (Validation' e a)
+failureGen = do
+  e <- arbitrary
+  return $ Failure' e
+
+successGen :: Arbitrary a => Gen (Validation' e a)
+successGen = do
+  a <- arbitrary
+  return $ Success' a
+
+testLaws :: IO ()
+testLaws = quickBatch $ applicative
