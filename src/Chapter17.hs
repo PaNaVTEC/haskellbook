@@ -287,3 +287,15 @@ testLaws = do
   putStrLn "Four'"
   quickBatch $ applicative (undefined :: Four'QB)
   putStrLn ""
+
+stops :: [Char]
+stops = "pbtdkg"
+
+vowels :: [Char]
+vowels = "aeiou"
+
+combos :: [a] -> [b] -> [c] -> [(a, b, c)]
+combos a b c = (,,) <$> a <*> b <*> c
+
+combi :: [(Char, Char, Char)]
+combi = combos stops vowels stops
