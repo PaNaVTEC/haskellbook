@@ -1,6 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 module Chapter17 where
 
+import           Chapter16
 import           Control.Applicative
 import           Data.List                (elemIndex)
 import           Data.Monoid
@@ -70,11 +71,6 @@ ex2 = (,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> pure [1,2,3]
 
 -- idLaw = pure id <*> v = v
 -- compositionLaw (.) <*> u <*> v <*> w = u <*> (v <*> w)
-
-data List a = Nil | Cons a (List a) deriving (Eq, Show)
-instance Functor List where
-  fmap _ Nil              = Nil
-  fmap f (Cons head tail) = Cons (f head) (fmap f tail)
 
 instance Applicative List where
   pure :: a -> List a
@@ -159,10 +155,6 @@ successGen = do
 instance (Eq a, Eq e) => EqProp (Validation' e a) where
   (=-=) = eq
 
-type VQB = Validation' (String, Sum Int, Sum Int) (String, Sum Int, Sum Int)
-testLaws :: IO ()
-testLaws = quickBatch $ applicative (undefined :: VQB)
-
 -- Can be checked with:
 -- :set -XTypeApplications
 -- :t pure @[]
@@ -190,3 +182,25 @@ testLaws = quickBatch $ applicative (undefined :: VQB)
 -- type (-> e)
 -- pure :: a -> (e -> a)
 -- (<*>) :: (e -> a -> b) -> (e -> a) -> (e -> b)
+
+instance Applicative Pair where
+  pure :: a -> Pair a
+  pure a = Pair a a
+
+  (<*>) :: Pair (a -> b) -> Pair a -> Pair b
+  (<*>) (Pair f f') (Pair a a') = Pair (f a) (f' a')
+
+instance (Eq a) => EqProp (Pair a) where
+  (=-=) = eq
+
+type VQB = Validation' (String, Data.Monoid.Sum Int, Data.Monoid.Sum Int) (String, Data.Monoid.Sum Int, Data.Monoid.Sum Int)
+type PQB = Pair (String, Int, Int)
+testLaws :: IO ()
+testLaws = do
+  putStrLn "Validation"
+  quickBatch $ applicative (undefined :: VQB)
+  putStrLn ""
+
+  putStrLn "Pair"
+  quickBatch $ applicative (undefined :: PQB)
+  putStrLn ""

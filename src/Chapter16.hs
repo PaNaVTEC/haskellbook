@@ -251,7 +251,7 @@ data IgnoreOne f g a b = IgnoreSomething (f a) (g b)
 instance Functor g => Functor (IgnoreOne f g a) where
   fmap f (IgnoreSomething f' g) = IgnoreSomething f' (fmap f g)
 
-data List a = Nil | Cons a (List a)
+data List a = Nil | Cons a (List a) deriving (Eq, Show)
 instance Functor List where
   fmap _ Nil        = Nil
   fmap f (Cons a t) = Cons (f a) (fmap f t)
