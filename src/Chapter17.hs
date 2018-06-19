@@ -162,3 +162,31 @@ instance (Eq a, Eq e) => EqProp (Validation' e a) where
 type VQB = Validation' (String, Sum Int, Sum Int) (String, Sum Int, Sum Int)
 testLaws :: IO ()
 testLaws = quickBatch $ applicative (undefined :: VQB)
+
+-- Can be checked with:
+-- :set -XTypeApplications
+-- :t pure @[]
+
+-- type []
+-- pure :: a -> [a]
+-- (<*>) :: [a -> b] -> [a] -> [b]
+
+-- type IO
+-- pure :: a -> IO a
+-- (<*>) :: IO (a -> b) -> IO a -> IO b
+
+-- type IO
+-- pure :: a -> IO a
+-- (<*>) :: IO (a -> b) -> IO a -> IO b
+
+-- check with:
+-- :t pure @((,) _)
+-- type (,) a
+-- pure :: Monoid w => a -> (w, a) -- needed to do mempty
+-- (<*>) :: Monoid w => (w, a -> b) -> (w, a) -> IO (w, b)
+
+-- check with:
+-- :t (<*>) @((->) _)
+-- type (-> e)
+-- pure :: a -> (e -> a)
+-- (<*>) :: (e -> a -> b) -> (e -> a) -> (e -> b)
