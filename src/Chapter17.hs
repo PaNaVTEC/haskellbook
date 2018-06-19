@@ -193,8 +193,24 @@ instance Applicative Pair where
 instance (Eq a) => EqProp (Pair a) where
   (=-=) = eq
 
-type VQB = Validation' (String, Data.Monoid.Sum Int, Data.Monoid.Sum Int) (String, Data.Monoid.Sum Int, Data.Monoid.Sum Int)
+instance Monoid a => Applicative (Two a) where
+  pure :: a1 -> Two a a1
+  pure b = Two mempty b
+
+  (<*>) :: Two a (a' -> b) -> Two a a' -> Two a b
+  (<*>) (Two a fb) (Two a' b) = Two (a <> a') (fb b)
+
+instance (Eq a, Eq b) => EqProp (Two a b) where
+  (=-=) = eq
+
+type VQB = Validation'
+  (String, Data.Monoid.Sum Int, Data.Monoid.Sum Int)
+  (String, Data.Monoid.Sum Int, Data.Monoid.Sum Int)
 type PQB = Pair (String, Int, Int)
+type TQB = Two
+  (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
+  (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
+
 testLaws :: IO ()
 testLaws = do
   putStrLn "Validation"
@@ -203,4 +219,8 @@ testLaws = do
 
   putStrLn "Pair"
   quickBatch $ applicative (undefined :: PQB)
+  putStrLn ""
+
+  putStrLn "Two"
+  quickBatch $ applicative (undefined :: TQB)
   putStrLn ""
