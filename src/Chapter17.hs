@@ -217,6 +217,13 @@ instance Monoid a => Applicative (Three' a) where
 instance (Eq a, Eq b) => EqProp (Three' a b) where
   (=-=) = eq
 
+instance (Monoid a, Monoid b, Monoid c) => Applicative (Four a b c) where
+  pure d = Four mempty mempty mempty d
+  (<*>) (Four a b c fd) (Four a' b' c' d) = Four (a <> a') (b <> b') (c <> c') (fd d)
+
+instance (Eq a, Eq b, Eq c, Eq d) => EqProp (Four a b c d) where
+  (=-=) = eq
+
 type VQB = Validation'
   (String, Data.Monoid.Sum Int, Data.Monoid.Sum Int)
   (String, Data.Monoid.Sum Int, Data.Monoid.Sum Int)
@@ -231,6 +238,12 @@ type ThreeQB = Three
   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
 
 type Three'QB = Three'
+  (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
+  (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
+
+type FourQB = Four
+  (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
+  (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Product Int)
 
@@ -254,4 +267,8 @@ testLaws = do
 
   putStrLn "Three'"
   quickBatch $ applicative (undefined :: Three'QB)
+  putStrLn ""
+
+  putStrLn "Four"
+  quickBatch $ applicative (undefined :: FourQB)
   putStrLn ""
