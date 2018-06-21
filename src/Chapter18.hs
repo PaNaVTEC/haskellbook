@@ -1,6 +1,8 @@
 {-# LANGUAGE InstanceSigs #-}
 module Chapter18 where
 
+import           Chapter16                (List (Cons, Nil))
+import           Chapter17                (concat')
 import           Test.QuickCheck
 import           Test.QuickCheck.Checkers
 import           Test.QuickCheck.Classes
@@ -36,9 +38,52 @@ instance (Eq a, Eq b) => EqProp (Sum a b) where (=-=) = eq
 
 type SumQB = Sum (Int) (String, Int, String)
 
+data Nope a = NopeDotJpg
+
+instance Functor Nope where fmap _ _ = NopeDotJpg
+instance Applicative Nope where
+  pure _ = NopeDotJpg
+  (<*>) _ _ = NopeDotJpg
+instance Monad Nope where
+  return = pure
+  (>>=) _ _ = NopeDotJpg
+
+newtype Identity a = Identity a deriving (Eq, Ord, Show)
+
+instance Functor Identity where fmap f (Identity a) = Identity $ f a
+instance Applicative Identity where
+  pure a = Identity a
+  (<*>) (Identity f) fa = f <$> fa
+instance Monad Identity where
+  return = pure
+  (>>=) (Identity a) f = f a
+
+type IdentityQB = Identity (String, Int, String)
+instance Arbitrary a => Arbitrary (Identity a) where
+  arbitrary = arbitrary >>= (\a -> return $ Identity a)
+instance Eq a => EqProp (Identity a) where
+  (=-=) = eq
+
+instance Monad List where
+  return = pure
+  (>>=) Nil _ = Nil
+  (>>=) l f   = concat' (fmap f l)
+
+type ListQB = List (Int, String, Int)
+instance Arbitrary a => Arbitrary (List a) where
+  arbitrary = do
+    a <- arbitrary
+    return $ Cons a Nil
+
+instance Eq a => EqProp (List a) where (=-=) = eq
+
+j :: Monad m => m (m a) -> m a
+j mma = undefined
+
 testLaws :: IO ()
 testLaws = do
   putStrLn "Sum a b"
   quickBatch $ monad (undefined :: SumQB)
   quickBatch $ applicative (undefined :: SumQB)
-  putStrLn ""
+  quickBatch $ monad (undefined :: IdentityQB)
+  quickBatch $ monad (undefined :: ListQB)
