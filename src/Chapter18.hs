@@ -78,7 +78,7 @@ instance Arbitrary a => Arbitrary (List a) where
 instance Eq a => EqProp (List a) where (=-=) = eq
 
 j :: Monad m => m (m a) -> m a
-j mma = undefined
+j mma = mma >>= (\ma -> ma >>= pure)
 
 testLaws :: IO ()
 testLaws = do
