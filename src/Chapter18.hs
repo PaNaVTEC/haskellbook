@@ -80,6 +80,21 @@ instance Eq a => EqProp (List a) where (=-=) = eq
 j :: Monad m => m (m a) -> m a
 j mma = mma >>= (\ma -> ma >>= pure)
 
+l1 :: Monad m => (a -> b) -> m a -> m b
+l1 f ma = f <$> ma
+
+l2 :: Monad m => (a -> b -> c) -> m a -> m b -> m c
+l2 f ma mb = f <$> ma <*> mb
+
+a :: Monad m => m a -> m (a -> b) -> m b
+a ma mf = ma >>= (\a -> mf >>= (\f -> pure (f a)))
+
+meh :: Monad m => [a] -> (a -> m b) -> m [b]
+meh arr f = sequence $ f <$> arr
+
+flipType :: Monad m => [m a] -> m [a]
+flipType arr = meh arr id
+
 testLaws :: IO ()
 testLaws = do
   putStrLn "Sum a b"
