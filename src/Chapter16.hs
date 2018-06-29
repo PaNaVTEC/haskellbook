@@ -92,7 +92,7 @@ type IntToInt = Fun Int Int
 type IntFC = [Int] -> IntToInt -> IntToInt -> Bool
 
 --- Functor instances
-newtype Identity a = Identity a deriving (Eq, Show)
+newtype Identity a = Identity a deriving (Eq, Ord, Show)
 instance Functor Identity where
   fmap f (Identity a) = Identity (f a)
 type IdentityFC = Identity Int -> IntToInt -> IntToInt -> Bool
