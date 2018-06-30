@@ -137,6 +137,38 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Big a b) where
     frequency [(1, return $ Big a b b'), (1, return $ Big a b b)]
 instance (Eq a, Eq b) => EqProp (Big a b) where (=-=) = eq
 
+data Tree a = Empty | Leaf a | Node (Tree a) a (Tree a) deriving (Eq, Show)
+
+instance Functor Tree where
+  fmap :: (a -> b) -> Tree a -> Tree b
+  fmap f Empty         = Empty
+  fmap f (Leaf a)      = Leaf $ f a
+  fmap f (Node t a t') = Node (fmap f t) (f a) (fmap f t')
+
+instance Foldable Tree where
+  foldMap :: Monoid m => (a -> m) -> Tree a -> m
+  foldMap f Empty         = mempty
+  foldMap f (Leaf a)      = f a
+  foldMap f (Node t a t') = (foldMap f t) <> f a <> (foldMap f t')
+
+instance Traversable Tree where
+  traverse :: Applicative f => (a -> f b) -> Tree a -> f (Tree b)
+  traverse f Empty         = pure Empty
+  traverse f (Leaf a)      = Leaf <$> f a
+  traverse f (Node t a t') = liftA3 Node (traverse f t) (f a) (traverse f t')
+
+type TreeAT = Tree
+   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Sum Int)
+
+instance Arbitrary a => Arbitrary (Tree a) where
+  arbitrary = do
+    a <- arbitrary
+    frequency [ (1, return Empty)
+              , (1, return $ Leaf a)
+              , (1, liftA3 Node arbitrary (pure a) arbitrary)]
+
+instance Eq a => EqProp (Tree a) where (=-=) = eq
+
 testLaws :: IO ()
 testLaws = do
   putStrLn "Identity"
@@ -153,3 +185,5 @@ testLaws = do
   quickBatch $ traversable (undefined :: PairABAT)
   putStrLn "Big"
   quickBatch $ traversable (undefined :: BigAT)
+  putStrLn "Tree"
+  quickBatch $ traversable (undefined :: TreeAT)
