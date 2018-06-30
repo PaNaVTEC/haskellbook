@@ -68,6 +68,12 @@ instance Traversable List where
 instance Eq a => EqProp (List a) where (=-=) = eq
 type ListAT = List (String, Int, String)
 
+instance Arbitrary a => Arbitrary (List a) where
+  arbitrary = do
+    a <- arbitrary
+    frequency [ (1, (Cons a) <$> arbitrary)
+              , (1, return $ Nil)]
+
 testLaws :: IO ()
 testLaws = do
   putStrLn "Identity"
@@ -76,3 +82,5 @@ testLaws = do
   quickBatch $ traversable (undefined :: ConstantAT)
   putStrLn "Optional"
   quickBatch $ traversable (undefined :: OptionalAT)
+  putStrLn "List"
+  quickBatch $ traversable (undefined :: ListAT)
