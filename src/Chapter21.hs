@@ -74,6 +74,69 @@ instance Arbitrary a => Arbitrary (List a) where
     frequency [ (1, (Cons a) <$> arbitrary)
               , (1, return $ Nil)]
 
+instance Foldable (Three a b) where
+  foldMap :: (c -> m) -> Three a b c -> m
+  foldMap f (Three _ _ c) = f c
+
+instance Traversable (Three a b) where
+  traverse :: Applicative f => (c -> f c') -> Three a b c -> f (Three a b c')
+  traverse f (Three a b c) = (Three a b) <$> f c
+
+type ThreeAT = Three
+   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Sum Int)
+   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Sum Int)
+   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Sum Int)
+
+instance Eq a => EqProp (Data.Monoid.Sum a) where (=-=) = eq
+instance Eq a => EqProp (Data.Monoid.Product a) where (=-=) = eq
+
+data PairAB a b = PairAB a b deriving (Eq, Show)
+instance Functor (PairAB a) where
+  fmap :: (b -> c) -> PairAB a b -> PairAB a c
+  fmap f (PairAB a b) = PairAB a (f b)
+
+instance Foldable (PairAB a) where
+  foldMap :: (b -> m) -> PairAB a b -> m
+  foldMap f (PairAB _ b) = f b
+
+instance Traversable (PairAB a) where
+  traverse :: Applicative f => (b -> f c) -> PairAB a b -> f (PairAB a c)
+  traverse f (PairAB a b) = (PairAB a) <$> f b
+type PairABAT = PairAB
+   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Sum Int)
+   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Sum Int)
+instance (Arbitrary a, Arbitrary b) => Arbitrary (PairAB a b) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    return $ PairAB a b
+instance (Eq a, Eq b) => EqProp (PairAB a b) where (=-=) = eq
+
+data Big a b = Big a b b deriving (Eq, Show)
+
+instance Functor (Big a) where
+  fmap f (Big a b b') = Big a (f b) (f b')
+
+instance Foldable (Big a) where
+  foldMap :: Monoid m => (b -> m) -> Big a b -> m
+  foldMap f (Big a b b') = f b <> f b'
+
+instance Traversable (Big a) where
+  traverse :: Applicative f => (b -> f c) -> Big a b -> f (Big a c)
+  traverse f (Big a b b') = Big a <$> (f b) <*> (f b')
+
+type BigAT = Big
+   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Sum Int)
+   (Data.Monoid.Sum Int, Data.Monoid.Product Int, Data.Monoid.Sum Int)
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Big a b) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    b' <- arbitrary
+    frequency [(1, return $ Big a b b'), (1, return $ Big a b b)]
+instance (Eq a, Eq b) => EqProp (Big a b) where (=-=) = eq
+
 testLaws :: IO ()
 testLaws = do
   putStrLn "Identity"
@@ -84,3 +147,9 @@ testLaws = do
   quickBatch $ traversable (undefined :: OptionalAT)
   putStrLn "List"
   quickBatch $ traversable (undefined :: ListAT)
+  putStrLn "Three"
+  quickBatch $ traversable (undefined :: ThreeAT)
+  putStrLn "Pair"
+  quickBatch $ traversable (undefined :: PairABAT)
+  putStrLn "Big"
+  quickBatch $ traversable (undefined :: BigAT)
