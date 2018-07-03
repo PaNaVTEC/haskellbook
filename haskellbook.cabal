@@ -23,6 +23,14 @@ library
                      , containers
                      , QuickCheck
                      , checkers
+                     , bytestring
+                     , hedis
+                     , mtl
+                     , network-uri
+                     , random
+                     , scotty
+                     , text
+                     , transformers
   default-language:    Haskell2010
 
 executable haskellbook-exe
