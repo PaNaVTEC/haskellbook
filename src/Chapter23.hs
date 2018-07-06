@@ -66,3 +66,22 @@ instance Functor (Moi s) where
   fmap f (Moi g) = Moi $ \s -> do
     let (a, s') = g s
     (f a, s')
+
+instance Applicative (Moi s) where
+  pure :: a -> Moi s a
+  pure a = Moi $ \s -> (a, s)
+
+  (<*>) :: Moi s (a -> b) -> Moi s a -> Moi s b
+  (<*>) (Moi sab) (Moi sa) = Moi $ \s -> do
+    let (f, s') = sab s
+    let (a, s'') = sa s'
+    (f a, s'')
+
+instance Monad (Moi s) where
+  return = pure
+
+  (>>=) :: Moi s a -> (a -> Moi s b) -> Moi s b
+  (>>=) (Moi sa) asb = Moi $ \s -> do
+    let (a, s') = sa s
+    let sb = asb a
+    runMoi sb s'
