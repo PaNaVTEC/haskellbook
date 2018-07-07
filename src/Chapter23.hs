@@ -85,3 +85,27 @@ instance Monad (Moi s) where
     let (a, s') = sa s
     let sb = asb a
     runMoi sb s'
+
+get :: Moi s s
+get = Moi $ \s -> (s, s)
+
+put :: s -> Moi s ()
+put s = Moi $ \s' -> ((), s)
+
+exec :: Moi s a -> s -> s
+exec msa s = snd $ runMoi msa s
+
+eval :: Moi s a -> s -> a
+eval msa s = fst $ runMoi msa s
+
+modify :: (s -> s) -> Moi s ()
+modify f = Moi $ \s -> ((), f s)
+
+fizzBuzz :: Integer -> String
+fizzBuzz n | n `mod` 15 == 0 = "FizzBuzz"
+           | n `mod` 5 == 0 = "Buzz"
+           | n `mod` 3 == 0 = "Fizz"
+           | otherwise = show n
+
+fizzBuzzFromTo :: Integer -> Integer -> [String]
+fizzBuzzFromTo f t = fmap fizzBuzz [f..t]
