@@ -26,6 +26,12 @@ constP ma mb = ma >>= (\a -> const a <$> mb)
 customEof :: (Parsing m, Monad m) => m a -> m a
 customEof ma = constP ma eof
 
+type RationalOrDecimal = Either Rational Integer
+
+decimalOrFraction :: Parser RationalOrDecimal
+decimalOrFraction = (Left <$> try parseFraction)
+  <|> (Right <$> decimal)
+
 main :: IO ()
 main = do
   let parseFraction' = parseString parseFraction mempty
@@ -33,3 +39,10 @@ main = do
   print $ parseFraction' shouldAlsoWork
   print $ parseFraction' alsoBad
   print $ parseFraction' badFraction
+
+  let parseDecimalOrFraction = parseString decimalOrFraction mempty
+  print "The following should work because they use a new Parser"
+  print $ parseDecimalOrFraction shouldWork
+  print $ parseDecimalOrFraction shouldAlsoWork
+  print $ parseDecimalOrFraction alsoBad
+  print $ parseDecimalOrFraction badFraction
