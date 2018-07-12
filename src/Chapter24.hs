@@ -3,6 +3,8 @@
 module Chapter24 where
 
 import           Control.Applicative
+import           Data.Int
+import           Data.Word
 import           Test.Hspec
 import           Text.Trifecta
 
@@ -47,8 +49,8 @@ parsePhone = do
     digitLength :: Int -> Parser Int
     digitLength n = read <$> count n digit
 
-test :: IO ()
-test = hspec $ do
+testPhoneNumbers :: IO ()
+testPhoneNumbers = hspec $ do
   describe "Parse phone" $ do
     it "with hyphens" $ do
       show (parseString parsePhone mempty "123-456-7890")
@@ -65,3 +67,23 @@ test = hspec $ do
     it "with parenthesys" $ do
       show (parseString parsePhone mempty "1-123-456-7890")
         `shouldBe` show (Success (PhoneNumber 123 456 7890))
+
+data IPAddress = IPAddress Word32 deriving (Eq, Ord, Show)
+
+parseIp :: Parser IPAddress
+parseIp = do
+  f <- parseSegment
+  _ <- char '.'
+  s <- parseSegment
+  _ <- char '.'
+  t <- parseSegment
+  _ <- char '.'
+  ff <- parseSegment
+  return $ IPAddress
+    $ f * 256 ^ 3
+    + s * 256 ^ 2
+    + t * 256 ^ 1
+    + ff * 256 ^ 0
+  where
+    parseSegment :: Parser Word32
+    parseSegment = read <$> some digit
