@@ -92,14 +92,16 @@ parseIp = do
 data IPAddress6 = IPAddress6 Word64 Word64 deriving (Eq, Ord, Show)
 parseIp6 :: Parser IPAddress6
 parseIp6 = do
-  f <- (\a b c d -> (a + b + c + d) :: Word64) <$> parseSegment <*> parseSegment <*> parseSegment <*> parseSegment
---  t <- (\a b c d -> a + b + c + d) <$> parseSegment <*> parseSegment <*> parseSegment <*> parseSegment
-  return $ IPAddress6 f 1
+  f <- toDec <$> parseSegment <*> parseSegment <*> parseSegment <*> parseSegment
+  t <- toDec <$> parseSegment <*> parseSegment <*> parseSegment <*> parseSegment
+  return $ IPAddress6 f t
   where
-    parseSegment :: Parser Integer
-    parseSegment = try (constP hexSegment separator)
-      <|> const 0 <$> separator
-    hexSegment :: Parser Integer
+    toDec :: Word64 -> Word64 -> Word64 -> Word64 -> Word64
+    toDec a b c d = a * 256 ^ 3 + b * 256 ^ 2 + c * 256 ^ 1 + d * 256 ^ 0
+
+    parseSegment :: Parser Word64
+    parseSegment = try (constP hexSegment separator) <|> const 0 <$> separator
+    hexSegment :: Parser Word64
     hexSegment = fst . head . readHex <$> (some alphaNum)
     separator :: Parser ()
     separator = try (const () <$> char ':') <|> eof
