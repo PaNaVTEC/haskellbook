@@ -73,22 +73,23 @@ testPhoneNumbers = hspec $ do
 data IPAddress = IPAddress Word32 deriving (Eq, Ord, Show)
 
 parseIp :: Parser IPAddress
-parseIp = do
-  f <- parseSegment
-  _ <- char '.'
-  s <- parseSegment
-  _ <- char '.'
-  t <- parseSegment
-  _ <- char '.'
-  ff <- parseSegment
-  return $ IPAddress
-    $ f * 256 ^ 3
-    + s * 256 ^ 2
-    + t * 256 ^ 1
-    + ff * 256 ^ 0
+parseIp = IPAddress <$> (toWord32
+                         <$> parseSegment
+                         <*> parseSegment
+                         <*> parseSegment
+                         <*> parseSegment)
   where
+    toWord32 f s t ff = f * 256 ^ 3 + s * 256 ^ 2 + t * 256 ^ 1 + ff * 256 ^ 0
     parseSegment :: Parser Word32
-    parseSegment = read <$> some digit
+    parseSegment = try $ constP (read <$> some digit) separator
+    separator = try (const () <$> char '.') <|> eof
+
+testIp4 :: IO ()
+testIp4 = hspec $ do
+  describe "Tests ip4 addresses" $ do
+    it ("can parse ips") $ do
+      let (Success x) = parseString parseIp mempty "192.168.1.10"
+      x `shouldBe` (IPAddress 3232235786)
 
 data IPAddress6 = IPAddress6 Word64 Word64 deriving (Eq, Ord, Show)
 parseIp6 :: Parser IPAddress6
