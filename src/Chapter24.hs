@@ -105,7 +105,11 @@ parseIp6 = do
     separator = try (const () <$> char ':') <|> eof
 
 toWord64 :: Int -> Int -> Int -> Int -> Word64
-toWord64 i1 i2 i3 i4 = fromIntegral $ (shift i1 48) + (shift i2 32) + (shift i3 16) + i4
+toWord64 i1 i2 i3 i4 = fromIntegral
+                      $ (shift i1 48)
+                      + (shift i2 32)
+                      + (shift i3 16)
+                      + i4
 
 constP :: (Parsing m, Monad m) => m a -> m b -> m a
 constP ma mb = ma >>= (\a -> const a <$> mb)
@@ -118,4 +122,8 @@ testIp6 = hspec $ do
   describe "Tests ip6 addresses" $ do
     it ("can parse ips") $ do
       let (Success x) = parseString parseIp6 mempty "0:0:0:0::ffff:cc78:f"
-      ip6ToInteger x `shouldBe` 338288524927261089654163772891438416681
+      ip6ToInteger x `shouldBe` 281474112159759
+
+    it ("can parse ips 2") $ do
+      let (Success x) = parseString parseIp6 mempty "0:0:0:0:0:ffff:ac10:fe01"
+      ip6ToInteger x `shouldBe` 281473568538113
