@@ -47,3 +47,18 @@ data SuperDrei a b c = SuperDrei a b
 instance Bifunctor (SuperDrei a) where
   bimap :: (a1 -> b) -> (c -> d) -> SuperDrei a a1 c -> SuperDrei a b d
   bimap a1b cd (SuperDrei a1 b) = SuperDrei a1 (a1b b)
+
+data Semidrei a b c = Semidrei a
+instance Bifunctor (Semidrei a) where
+  bimap ab cd (Semidrei a) = Semidrei a
+
+data Quadriceps a b c d = Quazzz a b c d
+instance Bifunctor (Quadriceps a b) where
+  bimap :: (a1 -> b1) -> (c -> d) -> Quadriceps a b a1 c -> Quadriceps a b b1 d
+  bimap a1b1 cd (Quazzz a b a1 c) = Quazzz a b (a1b1 a1) (cd c)
+
+data Either a b = Left a | Right b
+instance Bifunctor Chapter25.Either where
+  bimap :: (a -> b) -> (c -> d) -> Chapter25.Either a c -> Chapter25.Either b d
+  bimap ab cd (Chapter25.Left a) = Chapter25.Left $ ab a
+  bimap ab cd (Chapter25.Right c) = Chapter25.Right $ cd c
