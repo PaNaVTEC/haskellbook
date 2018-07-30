@@ -62,3 +62,21 @@ instance Bifunctor Chapter25.Either where
   bimap :: (a -> b) -> (c -> d) -> Chapter25.Either a c -> Chapter25.Either b d
   bimap ab cd (Chapter25.Left a) = Chapter25.Left $ ab a
   bimap ab cd (Chapter25.Right c) = Chapter25.Right $ cd c
+
+newtype Identity a = Identity { runIdentity :: a } deriving (Eq, Show)
+
+newtype IdentityT f a = IdentityT { runIdentityT :: f a } deriving (Eq, Show)
+instance Functor m => Functor (IdentityT m) where
+  fmap f (IdentityT fa) = IdentityT $ f <$> fa
+
+instance Applicative m => Applicative (IdentityT m) where
+  pure x = IdentityT (pure x)
+  (IdentityT fab) <*> (IdentityT fa) = IdentityT (fab <*> fa)
+
+instance Monad m => Monad (IdentityT m) where
+  return :: a -> IdentityT m a
+  return = pure
+
+  (>>=) :: IdentityT m a -> (a -> IdentityT m b) -> IdentityT m b
+--  (IdentityT ma) >>= f = IdentityT $ ma >>= (\a -> runIdentityT $ f a)
+  (IdentityT ma) >>= f = IdentityT $ ma >>= runIdentityT . f
