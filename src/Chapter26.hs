@@ -37,3 +37,21 @@ eitherT amc bmc (EitherT amb) = amb >>= mapLR
   where
     mapLR (Left a) = amc a
     mapLR (Right b) = bmc b
+
+newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
+
+instance Functor m => Functor (StateT s m) where
+  fmap :: (a -> b) -> StateT s m a -> StateT s m b
+  fmap ab (StateT smas) = StateT $ \s -> mapT <$> (smas s)
+   where
+     mapT (a, s) = (ab a, s)
+
+instance Monad m => Applicative (StateT s m) where
+  pure :: a -> StateT s m a
+  pure a = StateT $ \s -> pure (a, s)
+
+  (<*>) :: StateT s m (a -> b) -> StateT s m a -> StateT s m b
+  (<*>) (StateT smab) (StateT smas) = StateT $ \s -> do
+    (a, s') <- smas s
+    (ab, _) <- smab s
+    return (ab a, s')
