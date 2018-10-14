@@ -55,3 +55,11 @@ instance Monad m => Applicative (StateT s m) where
     (a, s') <- smas s
     (ab, _) <- smab s
     return (ab a, s')
+
+instance Monad m => Monad (StateT s m) where
+  return = pure
+
+  (>>=) :: StateT s m a -> (a -> StateT s m b) -> StateT s m b
+  (StateT sma) >>= asmb = StateT $ \s -> do
+    (a, s') <- sma s
+    runStateT (asmb a) s'
