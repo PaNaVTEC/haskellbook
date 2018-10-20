@@ -4,6 +4,7 @@ module Chapter26 where
 
 import Control.Applicative
 import Control.Monad
+import Control.Monad.Trans
 
 newtype EitherT e m a = EitherT { runEitherT :: m (Either e a) }
 
@@ -63,3 +64,11 @@ instance Monad m => Monad (StateT s m) where
   (StateT sma) >>= asmb = StateT $ \s -> do
     (a, s') <- sma s
     runStateT (asmb a) s'
+
+instance MonadTrans (EitherT e) where
+  lift :: Monad m => m a -> EitherT e m a
+  lift ma = EitherT $ ma >>= return . Right
+
+instance MonadTrans (StateT s) where
+  lift :: Monad m => m a -> StateT s m a
+  lift ma = StateT $ \s -> ma >>= \a -> return (a, s)
