@@ -18,5 +18,4 @@ readerUnwrap :: () -> IO (Either String (Maybe Int))
 readerUnwrap = runReaderT eitherUnwrap
 
 embedded' :: MaybeT (ExceptT String (ReaderT () IO )) Int
---embedded' = ReaderT $ ExceptT $ MaybeT (const (Right (Just 1)))
-embedded' =  $ Just 1
+embedded' = MaybeT . ExceptT . ReaderT . const . return . Right $ Just 1
