@@ -5,6 +5,9 @@ module Chapter26 where
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans
+import Control.Monad.Reader
+import qualified Control.Monad.State as ST
+import Data.Functor.Identity
 
 newtype EitherT e m a = EitherT { runEitherT :: m (Either e a) }
 
@@ -72,3 +75,22 @@ instance MonadTrans (EitherT e) where
 instance MonadTrans (StateT s) where
   lift :: Monad m => m a -> StateT s m a
   lift ma = StateT $ \s -> ma >>= \a -> return (a, s)
+
+rDec :: Num a => Reader a a
+rDec = asks (subtract 1)
+
+rShow :: Show a => ReaderT a Identity String
+rShow = asks show
+
+rPrintAndInc :: (Num a, Show a) => ReaderT a IO a
+rPrintAndInc = do
+  i <- ask
+  _ <- liftIO $ putStrLn $ "Hi: "  ++ show i
+  return $ i + 1
+
+sPrintIncAccum :: (Num a, Show a) => ST.StateT a IO String
+sPrintIncAccum = do
+  i <- ST.get
+  _ <- liftIO $ putStrLn $ "Hi: "  ++ show i
+  ST.put (i + 1)
+  return $ show i
