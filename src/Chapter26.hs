@@ -9,6 +9,8 @@ import Control.Monad.Reader
 import qualified Control.Monad.State as ST
 import Data.Functor.Identity
 
+import Control.Monad.Trans.Maybe
+
 newtype EitherT e m a = EitherT { runEitherT :: m (Either e a) }
 
 instance Functor m => Functor (EitherT e m) where
@@ -94,3 +96,22 @@ sPrintIncAccum = do
   _ <- liftIO $ putStrLn $ "Hi: "  ++ show i
   ST.put (i + 1)
   return $ show i
+
+-- Fix the code
+
+isValid :: String -> Bool
+isValid v = '!' `elem` v
+
+maybeExcite :: MaybeT IO String
+maybeExcite = do
+  v <- liftIO getLine
+  guard $ isValid v
+  return v
+
+doExcite :: IO ()
+doExcite = do
+  putStrLn "say something excite!"
+  excite <- runMaybeT maybeExcite
+  case excite of
+    Nothing -> putStrLn "MOAR EXCITE"
+    Just e -> putStrLn ("Good, was very excite: " ++ e)
