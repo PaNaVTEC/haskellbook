@@ -1,6 +1,6 @@
-module Lib
-    ( someFunc
-    ) where
+module Lib ( someFunc) where
+
+import           Morra (main)
 
 someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+someFunc = main

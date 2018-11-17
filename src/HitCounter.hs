@@ -2,16 +2,16 @@
 
 module HitCounter where
 
-import Control.Monad.Trans.Class
-import Control.Monad.Trans.Reader
-import Data.IORef
-import qualified Data.Map as M
-import Data.Maybe (fromMaybe)
-import Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as TL
-import System.Environment (getArgs)
-import Web.Scotty.Trans
-import Data.Monoid
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Reader
+import           Data.IORef
+import qualified Data.Map                   as M
+import           Data.Maybe                 (fromMaybe)
+import           Data.Monoid
+import           Data.Text.Lazy             (Text)
+import qualified Data.Text.Lazy             as TL
+import           System.Environment         (getArgs)
+import           Web.Scotty.Trans
 
 data Config = Config { counts :: IORef (M.Map Text Integer), prefix :: Text }
 
