@@ -12,12 +12,24 @@ import           Control.Monad (void)
 import           Data.Bool (bool)
 
 main :: IO ()
-main = void $ untilM' (const False) initialState runGame
+main = undefined
+
+playVsPlayer :: IO ()
+playVsPlayer = runMode initialState vsPlayer
   where
-    runGame s = snd <$> runStateT vsComputer s
+    initialState = GameState
+      (PlayerState zeroScore Odd "Player 1")
+      (PlayerState zeroScore Even "Player 2")
+
+playVsComputer :: IO ()
+playVsComputer = runMode initialState vsComputer
+  where
     initialState = GameState
       (PlayerState zeroScore Odd "Player 1")
       (PlayerState zeroScore Even "Computer")
+
+runMode state mode = void $ untilM' (const False) state runGame
+  where runGame s = snd <$> runStateT mode s
 
 zeroScore = Score 0
 
@@ -42,32 +54,43 @@ vsComputer = do
   _cInput <- liftIO $ mkValidInput <$> randomRIO (0, 10)
 
   printInfo _pInput _cInput =<< get
+  gameLogic _pInput _cInput
 
-  maybe
-    (return ())
-    (\eo -> do
-        printWhoWins eo =<< get
-        put . incScore eo =<< get
-        printGameState =<< get)
-    (calculateEvenOrOdd _pInput _cInput)
+vsPlayer :: (MonadState GameState m, MonadIO m) => m ()
+vsPlayer = do
+  _p1Input <- untilM isJust readPlayerInput
+  _p2Input <- untilM isJust readPlayerInput
 
+  printInfo _p1Input _p2Input =<< get
+  gameLogic _p1Input _p2Input
+
+gameLogic :: (MonadIO m, MonadState GameState m) =>
+  Maybe ValidInput -> Maybe ValidInput -> m ()
+gameLogic _p1Input _p2Input = maybe
+  (return ())
+  decideWhoWins
+  (calculateEvenOrOdd _p1Input _p2Input)
   where
+    decideWhoWins t = do
+      printWhoWins t =<< get
+      put . incScore t =<< get
+      printGameState =<< get
     printWhoWins t GameState { p1=_p1, p2=_p2 } = liftIO . putStrLn $ bool
       (playerName _p2 ++ " wins")
       (playerName _p1 ++ " wins")
       (playerMark _p1 == t)
 
-    printInfo _p1Input _p2Input GameState { p1=_p1, p2=_p2 } = liftIO $ do
-      putStr $ playerName _p1 ++ " is " ++ show (playerMark _p1) ++ ", "
-      putStrLn $ playerName _p2 ++ " is " ++ show (playerMark _p2)
+printInfo _p1Input _p2Input GameState { p1=_p1, p2=_p2 } = liftIO $ do
+  putStr $ playerName _p1 ++ " is " ++ show (playerMark _p1) ++ ", "
+  putStrLn $ playerName _p2 ++ " is " ++ show (playerMark _p2)
 
-      putStrLn $ playerName _p1 ++ ": " ++ show _p1Input
-      putStrLn $ playerName _p2 ++ ": " ++ show _p2Input
+  putStrLn $ playerName _p1 ++ ": " ++ show _p1Input
+  putStrLn $ playerName _p2 ++ ": " ++ show _p2Input
 
-    incScore Even gameState@GameState{ p1=_p1 } =
-      gameState { p1 = _p1 { playerScore = playerScore _p1 + 1 }}
-    incScore Odd gameState@GameState{ p2=_p2 } =
-      gameState { p2 = _p2 { playerScore = playerScore _p2 + 1 }}
+incScore Even gameState@GameState{ p1=_p1 } =
+  gameState { p1 = _p1 { playerScore = playerScore _p1 + 1 }}
+incScore Odd gameState@GameState{ p2=_p2 } =
+  gameState { p2 = _p2 { playerScore = playerScore _p2 + 1 }}
 
 printGameState :: MonadIO m => GameState -> m ()
 printGameState GameState { p1=_p1, p2=_p2 } = do
