@@ -52,24 +52,21 @@ vsComputer :: (MonadState GameState m, MonadIO m) => m ()
 vsComputer = do
   _pInput <- untilM isJust readPlayerInput
   _cInput <- liftIO $ mkValidInput <$> randomRIO (0, 10)
-
-  printInfo _pInput _cInput =<< get
   gameLogic _pInput _cInput
 
 vsPlayer :: (MonadState GameState m, MonadIO m) => m ()
 vsPlayer = do
   _p1Input <- untilM isJust readPlayerInput
   _p2Input <- untilM isJust readPlayerInput
-
-  printInfo _p1Input _p2Input =<< get
   gameLogic _p1Input _p2Input
 
 gameLogic :: (MonadIO m, MonadState GameState m) =>
   Maybe ValidInput -> Maybe ValidInput -> m ()
-gameLogic _p1Input _p2Input = maybe
-  (return ())
-  decideWhoWins
-  (calculateEvenOrOdd _p1Input _p2Input)
+gameLogic _p1Input _p2Input = do
+  printInfo _p1Input _p2Input =<< get
+  maybe (return ())
+    decideWhoWins
+    (calculateEvenOrOdd _p1Input _p2Input)
   where
     decideWhoWins t = do
       printWhoWins t =<< get
