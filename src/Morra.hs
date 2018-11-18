@@ -8,29 +8,32 @@ import           Control.Monad.State
 import           Data.Maybe             (maybe, isJust)
 import           System.Random          (randomRIO)
 import           Text.Read              (readMaybe)
-import Control.Monad (void)
+import           Control.Monad (void)
+import           Data.Bool (bool)
 
 main :: IO ()
 main = void $ untilM' (const False) initialState runGame
   where
-    runGame s = snd <$> runStateT game s
-    initialState = GameState (Score 0) (Score 0)
+    runGame s = snd <$> runStateT vsComputer s
+    initialState = GameState zeroScore zeroScore
 
-newtype Score = Score { unScore :: Int } deriving (Num, Eq, Show)
+zeroScore :: Score
+zeroScore = Score 0
+newtype Score = Score Int deriving (Num, Eq, Show)
 data GameState = GameState {
   playerScore   :: Score,
   computerScore :: Score
-} deriving (Eq, Show)
+} deriving Show
 
 newtype ValidInput = ValidInput { unInput :: Int } deriving (Eq, Show)
 mkValidInput :: Int -> Maybe ValidInput
-mkValidInput i = if i `elem` [0..10] then Just $ ValidInput i else Nothing
+mkValidInput i = bool Nothing (Just $ ValidInput i) (i `elem` [0..10])
 
 readPlayerInput :: MonadIO m => m (Maybe ValidInput)
 readPlayerInput = maybe Nothing mkValidInput . readMaybe <$> liftIO getLine
 
-game :: (MonadState GameState m, MonadIO m) => m ()
-game = do
+vsComputer :: (MonadState GameState m, MonadIO m) => m ()
+vsComputer = do
   _pInput <- untilM isJust readPlayerInput
   _cInput <- liftIO $ mkValidInput <$> randomRIO (0, 10)
 
@@ -47,8 +50,7 @@ game = do
           Odd -> putStrLn "- P wins"
         cState <- get
         put $ incScore cState eo
-        nState <- get
-        liftIO $ print nState
+        printGameState =<< get
     )
     (calculateEvenOrOdd _pInput _cInput)
 
@@ -57,6 +59,11 @@ game = do
       gameState { computerScore = computerScore gameState + 1 }
     incScore gameState Odd =
       gameState { playerScore = playerScore gameState + 1 }
+
+printGameState :: MonadIO m => GameState -> m ()
+printGameState _gState = do
+  liftIO $ print $ playerScore _gState
+  liftIO $ print $ computerScore _gState
 
 calculateEvenOrOdd :: Maybe ValidInput -> Maybe ValidInput -> Maybe EvenOrOdd
 calculateEvenOrOdd playerInput computerInput = (\a b -> mkEvenOdd $ unInput a + unInput b) <$> playerInput <*> computerInput
