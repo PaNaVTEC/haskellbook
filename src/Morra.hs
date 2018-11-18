@@ -8,9 +8,13 @@ import           Control.Monad.State
 import           Data.Maybe             (maybe, isJust)
 import           System.Random          (randomRIO)
 import           Text.Read              (readMaybe)
+import Control.Monad (void)
 
 main :: IO ()
-main = fst <$> runStateT game (GameState (Score 0) (Score 0))
+main = void $ untilM' (const False) initialState runGame
+  where
+    runGame s = snd <$> runStateT game s
+    initialState = GameState (Score 0) (Score 0)
 
 newtype Score = Score { unScore :: Int } deriving (Num, Eq, Show)
 data GameState = GameState {
@@ -43,6 +47,8 @@ game = do
           Odd -> putStrLn "- P wins"
         cState <- get
         put $ incScore cState eo
+        nState <- get
+        liftIO $ print nState
     )
     (calculateEvenOrOdd _pInput _cInput)
 
@@ -61,3 +67,6 @@ mkEvenOdd i = if even i then Even else Odd
 
 untilM :: Monad m => (a -> Bool) -> m a -> m a
 untilM p ma = (\a -> if p a then return a else untilM p ma) =<< ma
+
+untilM' :: Monad m => (a -> Bool) -> a -> (a -> m a) -> m a
+untilM' p _a ama = (\a -> if p a then return a else untilM' p a ama) =<< ama _a
