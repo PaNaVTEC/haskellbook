@@ -15,15 +15,19 @@ main :: IO ()
 main = void $ untilM' (const False) initialState runGame
   where
     runGame s = snd <$> runStateT vsComputer s
-    initialState = GameState zeroScore zeroScore
+    initialState = GameState
+      (PlayerState zeroScore Odd "Player 1")
+      (PlayerState zeroScore Even "Computer")
 
-zeroScore :: Score
 zeroScore = Score 0
+
 newtype Score = Score Int deriving (Num, Eq, Show)
-data GameState = GameState {
-  playerScore   :: Score,
-  computerScore :: Score
-} deriving Show
+data PlayerState = PlayerState {
+  playerScore :: Score,
+  playerMark :: EvenOrOdd,
+  playerName :: String
+}
+data GameState = GameState { p1 :: PlayerState, p2 :: PlayerState }
 
 newtype ValidInput = ValidInput { unInput :: Int } deriving (Eq, Show)
 mkValidInput :: Int -> Maybe ValidInput
@@ -37,38 +41,43 @@ vsComputer = do
   _pInput <- untilM isJust readPlayerInput
   _cInput <- liftIO $ mkValidInput <$> randomRIO (0, 10)
 
-  liftIO $ do
-    putStrLn "Player is odds, computer is evens."
-    putStrLn $ "P: " ++ show _pInput
-    putStrLn $ "C: " ++ show _cInput
+  printInfo _pInput _cInput =<< get
 
   maybe
     (return ())
     (\eo -> do
-        liftIO $ case eo of
-          Even -> putStrLn "- C wins"
-          Odd -> putStrLn "- P wins"
-        cState <- get
-        put $ incScore cState eo
-        printGameState =<< get
-    )
+        printWhoWins eo =<< get
+        put . incScore eo =<< get
+        printGameState =<< get)
     (calculateEvenOrOdd _pInput _cInput)
 
   where
-    incScore gameState Even =
-      gameState { computerScore = computerScore gameState + 1 }
-    incScore gameState Odd =
-      gameState { playerScore = playerScore gameState + 1 }
+    printWhoWins t GameState { p1=_p1, p2=_p2 } = liftIO . putStrLn $ bool
+      (playerName _p2 ++ " wins")
+      (playerName _p1 ++ " wins")
+      (playerMark _p1 == t)
+
+    printInfo _p1Input _p2Input GameState { p1=_p1, p2=_p2 } = liftIO $ do
+      putStr $ playerName _p1 ++ " is " ++ show (playerMark _p1) ++ ", "
+      putStrLn $ playerName _p2 ++ " is " ++ show (playerMark _p2)
+
+      putStrLn $ playerName _p1 ++ ": " ++ show _p1Input
+      putStrLn $ playerName _p2 ++ ": " ++ show _p2Input
+
+    incScore Even gameState@GameState{ p1=_p1 } =
+      gameState { p1 = _p1 { playerScore = playerScore _p1 + 1 }}
+    incScore Odd gameState@GameState{ p2=_p2 } =
+      gameState { p2 = _p2 { playerScore = playerScore _p2 + 1 }}
 
 printGameState :: MonadIO m => GameState -> m ()
-printGameState _gState = do
-  liftIO $ print $ playerScore _gState
-  liftIO $ print $ computerScore _gState
+printGameState GameState { p1=_p1, p2=_p2 } = do
+  liftIO $ print $ playerScore _p1
+  liftIO $ print $ playerScore _p2
 
 calculateEvenOrOdd :: Maybe ValidInput -> Maybe ValidInput -> Maybe EvenOrOdd
 calculateEvenOrOdd playerInput computerInput = (\a b -> mkEvenOdd $ unInput a + unInput b) <$> playerInput <*> computerInput
 
-data EvenOrOdd = Even | Odd
+data EvenOrOdd = Even | Odd deriving (Show, Eq)
 mkEvenOdd :: Int -> EvenOrOdd
 mkEvenOdd i = if even i then Even else Odd
 
